@@ -19,6 +19,7 @@ class DataDictionary:
 
 
     def abalone(self):
+        name = "Abalone"
         file = 'raw_data/abalone.csv'
         columns = ['Sex',  # For Abalone
          'Length',
@@ -31,9 +32,10 @@ class DataDictionary:
          'Rings' #Target
          ]
         target_name = 'Rings'
-        return (file, columns, target_name)
+        return (name, file, columns, target_name)
 
     def breastcancer(self):
+        name = "BreastCancer"
         file = 'raw_data/breast-cancer-wisconsin.csv'
         columns = [   'Id',   # For Breast Cancer
             'Clump Thickness',
@@ -48,9 +50,10 @@ class DataDictionary:
             'Class'  #Target
         ]
         target_name = 'Class'
-        return (file, columns, target_name)
+        return (name, file, columns, target_name)
 
     def forestfires(self):
+        name = "ForestFires"
         file = 'raw_data/forestfires.csv'
         columns = [ 'X', # For Forest Fires
           'Y',
@@ -67,9 +70,10 @@ class DataDictionary:
           'Area'  #Target
         ]
         target_name = 'Area'
-        return (file, columns, target_name)
+        return (name, file, columns, target_name)
 
     def glass(self):
+        name = "Glass"
         file = 'raw_data/glass.csv'
         columns = [   "Id number: 1 to 214",  # For Glass
             "RI: refractive index",
@@ -84,9 +88,10 @@ class DataDictionary:
             "Class" #Target
         ]
         target_name = 'Class'
-        return (file, columns, target_name)
+        return (name, file, columns, target_name)
 
     def hardware(self):
+        name = "Hardware"
         file = 'raw_data/machine.csv'
         columns = [   "Vendor Name",  # For Computer Hardware
             "Model Name",
@@ -100,9 +105,10 @@ class DataDictionary:
             "ERP"
         ]
         target_name = 'PRP'
-        return (file, columns, target_name)
+        return (name, file, columns, target_name)
 
     def soybean(self):
+        name = "SoyBean"
         file = 'raw_data/soybean-small.csv'
         columns =  ['Date',  # For Soy Bean
          'Plant-Stand',
@@ -142,4 +148,4 @@ class DataDictionary:
          'Class'  #Target
          ]
         target_name = 'Class'
-        return (file, columns, target_name)
+        return (name, file, columns, target_name)

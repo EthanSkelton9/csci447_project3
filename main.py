@@ -7,13 +7,13 @@ def main_Ian():
     DD = DataDictionary()
     for name in DD.datanames:
         data = Preprocessing(*DD.data(name))
-        data.add_column_names(pd.read_csv(data.data_loc, header = None))
-        data.df.to_csv(os.getcwd() + '\\' + name + '\\' + "{}_w_colnames.csv".format(name))
+        data.add_raw_data()
+        data.add_column_names()
+        data.save("w_colnames")
         data.one_hot()
-        data.df.to_csv(os.getcwd() + '\\' + name + '\\' + "{}_onehot.csv".format(name))
-        print(name)
-        print("Numerical: {}".format(data.features_numerical))
-        print("Categorical: {}".format(data.features_categorical))
+        data.save("onehot")
+        data.z_score_normalize()
+        data.save("z_score_normalized")
 
 
 
