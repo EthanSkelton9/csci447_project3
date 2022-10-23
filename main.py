@@ -1,5 +1,8 @@
 from preprocessing import Preprocessing
 
+def main_Ian():
+    s = Preprocessing("raw_data/soybean-small.csv")
+
 
 def main():
     #preprocessing ---------------------
@@ -38,4 +41,3 @@ def main():
     
     #postprocessing ----------------------
 if __name__=="__main__":
-    main()

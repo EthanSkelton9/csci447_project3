@@ -9,9 +9,10 @@ class Preprocessing:
     __init__: will initialize the preprocessing class based on the location that the data is
     @param data_loc: the string location where the file we want to read in is
     '''
-    def __init__(self, data_loc):
+    def __init__(self, data_loc, features):
         self.data_loc = data_loc #set the data location of the class equal to the data location that was sent in
         self.df = None #set the actual data to None for the moment
+        self.features = features #we need to say what the features are
         
     '''
     readcsv: will take the location of the file and convert it to pandas
@@ -36,7 +37,24 @@ class Preprocessing:
     
     
     def one_hot(data):
-        pass
+        (features_numerical, features_categorical) = ([], [])
+        features_categorical_ohe = []
+        for f in data.features:
+            try:
+                df[f].apply(pd.to_numeric)
+                features_numerical.append(f)
+            except:
+                features_categorical.append(f)
+                categories = set(df[f])
+                for cat in categories:
+                    features_categorical_ohe.append("{}_{}".format(f, cat))
+        data.features_numerical = features_numerical
+        data.features_categorical = features_categorical
+        one_hot_df = pd.get_dummies(df, columns=data.features_categorical)
+        self.features_ohe = features_numerical + features_categorical_ohe
+        target_column = one_hot_df.pop('Target')
+        one_hot_df.insert(len(one_hot_df.columns), 'Target', target_column)
+        return one_hot_df
     
     def column_names(data):
         pass 
