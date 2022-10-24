@@ -5,15 +5,12 @@ import os
 
 def main_Ian():
     DD = DataDictionary()
+    data = DD.data(True, "Abalone")
+    print(data.df.head(10))
+    datasets = DD.datasets(True)
+    print(datasets)
     for name in DD.datanames:
-        data = Preprocessing(*DD.data(name))
-        data.add_raw_data()
-        data.add_column_names()
-        data.save("w_colnames")
-        data.one_hot()
-        data.save("onehot")
-        data.z_score_normalize()
-        data.save("z_score_normalized")
+        print(datasets.loc[name].df.head(10))
 
 
 

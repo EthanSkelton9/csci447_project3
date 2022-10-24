@@ -1,4 +1,6 @@
-
+from preprocessing import Preprocessing
+import pandas as pd
+from functools import partial as pf
 
 class DataDictionary:
     def __init__(self):
@@ -9,7 +11,20 @@ class DataDictionary:
                           "Hardware",
                           "SoyBean"]
 
-    def data(self, name):
+    def datasets(self, preprocessed, names = None):
+        if names == None: names = self.datanames
+        return pd.Series(names, index=names).map(pf(self.data, preprocessed)) #for each name give the data object
+
+    def data(self, preprocessed, name):
+        data = Preprocessing(*self.metadata(name))
+        if preprocessed:
+            data.set_to_raw_data()   #give it the raw data
+            data.add_column_names()  #add column names as well as define features
+            data.one_hot()           #implement one hot encoding
+            data.z_score_normalize() #normalize data with z score
+        return data
+
+    def metadata(self, name):
         if name == "Abalone": return self.abalone()
         if name == "BreastCancer": return self.breastcancer()
         if name == "ForestFires": return self.forestfires()
