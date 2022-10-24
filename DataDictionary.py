@@ -11,11 +11,11 @@ class DataDictionary:
                           "Hardware",
                           "SoyBean"]
 
-    def datasets(self, preprocessed, names = None):
+    def dataobjects(self, preprocessed, names = None):
         if names == None: names = self.datanames
-        return pd.Series(names, index=names).map(pf(self.data, preprocessed)) #for each name give the data object
+        return pd.Series(names, index=names).map(pf(self.dataobject, preprocessed)) #for each name give the data object
 
-    def data(self, preprocessed, name):
+    def dataobject(self, preprocessed, name):
         data = Preprocessing(*self.metadata(name))
         if preprocessed:
             data.set_to_raw_data()   #give it the raw data

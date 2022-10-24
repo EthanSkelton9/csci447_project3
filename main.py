@@ -10,7 +10,7 @@ def main_Ian():
     datasets = DD.datasets(True)
     print(datasets)
     for name in DD.datanames:
-        print(datasets.loc[name].df.head(10))
+        print(datasets[name].df.head(10))
 
 
 
