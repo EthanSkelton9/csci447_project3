@@ -5,7 +5,7 @@ import os
 
 def main_Ian():
     DD = DataDictionary()
-    data = DD.data(True, "Abalone")
+    data = DD.dataobjects(True, "Abalone")
     print(data.df.head(10))
     datasets = DD.datasets(True)
     print(datasets)
@@ -52,3 +52,4 @@ def main():
     #postprocessing ----------------------
 if __name__=="__main__":
     main_Ian()
+    #main()
