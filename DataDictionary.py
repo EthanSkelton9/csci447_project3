@@ -20,6 +20,7 @@ class DataDictionary:
         if preprocessed:
             data.set_to_raw_data()   #give it the raw data
             data.add_column_names()  #add column names as well as define features
+            data.clean_missing()
             data.one_hot()           #implement one hot encoding
             data.z_score_normalize() #normalize data with z score
         return data
@@ -46,8 +47,9 @@ class DataDictionary:
          'Shell Weight',
          'Rings' #Target
          ]
+        replace = None
         target_name = 'Rings'
-        return (name, file, columns, target_name)
+        return (name, file, columns, target_name, replace)
 
     def breastcancer(self):
         name = "BreastCancer"
@@ -65,7 +67,8 @@ class DataDictionary:
             'Class'  #Target
         ]
         target_name = 'Class'
-        return (name, file, columns, target_name)
+        replace = '3'
+        return (name, file, columns, target_name, replace)
 
     def forestfires(self):
         name = "ForestFires"
@@ -84,8 +87,9 @@ class DataDictionary:
           'Rain',
           'Area'  #Target
         ]
+        replace = None
         target_name = 'Area'
-        return (name, file, columns, target_name)
+        return (name, file, columns, target_name, replace)
 
     def glass(self):
         name = "Glass"
@@ -103,7 +107,8 @@ class DataDictionary:
             "Class" #Target
         ]
         target_name = 'Class'
-        return (name, file, columns, target_name)
+        replace = None
+        return (name, file, columns, target_name, replace)
 
     def hardware(self):
         name = "Hardware"
@@ -120,7 +125,8 @@ class DataDictionary:
             "ERP"
         ]
         target_name = 'PRP'
-        return (name, file, columns, target_name)
+        replace = None
+        return (name, file, columns, target_name, replace)
 
     def soybean(self):
         name = "SoyBean"
@@ -162,5 +168,6 @@ class DataDictionary:
          'Roots',
          'Class'  #Target
          ]
+        replace = None
         target_name = 'Class'
-        return (name, file, columns, target_name)
+        return (name, file, columns, target_name, replace)

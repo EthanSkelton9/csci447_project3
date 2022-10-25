@@ -10,12 +10,13 @@ class Preprocessing:
     __init__: will initialize the preprocessing class based on the location that the data is
     @param data_loc: the string location where the file we want to read in is
     '''
-    def __init__(self, name, data_loc, columns, target_name):
+    def __init__(self, name, data_loc, columns, target_name, replace):
         self.name = name
         self.data_loc = data_loc #set the data location of the class equal to the data location that was sent in
         self.df = None #set the actual data to None for the moment
         self.columns = columns #we need to say what the features are
         self.target_name = target_name
+        self.replace = replace
 
 
     def __str__(self):
@@ -40,10 +41,17 @@ class Preprocessing:
     clean_missing: removes '?' that are in the dataframe and replaces them with another value
     @param replace: the value to replace the missing value with
     '''
-    def clean_missing(data, replace):
-        for col_name in data.df.columns:
-            data.df[col_name] = data.df[col_name].replace(['?'], [replace])
-        return data
+    def clean_missing(self):
+        if self.replace == None:
+            pass
+        else:
+            for col_name in self.df.columns:
+                self.df[col_name] = self.df[col_name].replace(['?'], [self.replace])
+            print(self.df['Bare Nuclei'].head(30))
+                
+            self.df['Bare Nuclei'] = pd.to_numeric(self.df['Bare Nuclei'])
+            # print(self.df['Bare Nuclei'][23])
+
     '''
     add_raw_data: defines the dataframe by the raw data
     '''
@@ -89,18 +97,18 @@ class Preprocessing:
             std = self.df[col].std() #computes standard deviation
             if std != 0:
                 self.df[col] = (self.df[col] - self.df[col].mean()) / std #column is normalized by z score
-    '''
-    preprocess: will preprocess the data for a given file and return the cleaned dataframe 
-    @param features - the features that will need to be read in to clean the df
-    @param missing - if there are missing values in the dataframe then replace with this value
-    @return clean - the cleaned datafram
-    '''
-    def preprocess(self, features, missing):
-        data = self.readcsv() #reads in csv to panda
-        if features == None:
-            pass
-        if missing != None:
-            self.clean_missing(data, missing)
-        clean = self.readcsv()
-        return clean
+    # '''
+    # preprocess: will preprocess the data for a given file and return the cleaned dataframe 
+    # @param features - the features that will need to be read in to clean the df
+    # @param missing - if there are missing values in the dataframe then replace with this value
+    # @return clean - the cleaned datafram
+    # '''
+    # def preprocess(self, features, missing):
+    #     data = self.readcsv() #reads in csv to panda
+    #     if features == None:
+    #         pass
+    #     if missing != None:
+    #         self.clean_missing(data, missing)
+    #     clean = self.readcsv()
+    #     return clean
     
