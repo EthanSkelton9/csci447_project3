@@ -18,7 +18,9 @@ def main_Ian():
     def f2():
         DD = DataDictionary()
         data = DD.dataobject(True, "Abalone")
-        print(IF1.graddesc(data)(eta = 0.1)(0))
+        y = IF1.predict_value(data)(eta = 0.1, eps = 0.01)(2)()
+        print(y)
+        print(data.df.at[2, "Target"])
     return f2()
 
 
