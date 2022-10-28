@@ -5,12 +5,12 @@ import os
 
 def main_Ian():
     DD = DataDictionary()
-    data = DD.dataobjects(True, "Abalone")
+    data = DD.dataobject(True, "Abalone")
     print(data.df.head(10))
-    datasets = DD.datasets(True)
-    print(datasets)
+    dataobjects = DD.dataobjects(True)
+    print(dataobjects)
     for name in DD.datanames:
-        print(datasets[name].df.head(10))
+        print(dataobjects[name].df.head(10))
 
 
 
