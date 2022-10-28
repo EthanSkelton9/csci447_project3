@@ -2,53 +2,23 @@ from preprocessing import Preprocessing
 import pandas as pd
 from DataDictionary import DataDictionary
 import os
+import IF1
+import numpy as np
 
 def main_Ian():
     DD = DataDictionary()
     data = DD.dataobject(True, "Abalone")
-    print(data.df.head(10))
-    dataobjects = DD.dataobjects(True)
-    print(dataobjects)
-    for name in DD.datanames:
-        print(dataobjects[name].df.head(10))
+    v = range(10)
+    m = np.matrix([v, v, v])
+    x = IF1.value(data)(0)
+    print(x)
+    print(IF1.sigmoid_v(x))
+    print(IF1.matrixmultiply(m)(x))
 
 
 
 def main():
-    #preprocessing ---------------------
-    
-    #glass
-    # g = Preprocessing("raw_data/glass.csv")
-    # g.preprocess()
-    
-    #soybeans
-    
-    s = Preprocessing("raw_data/soybean-small.csv")
-    s.readcsv()
-    clean = s.preprocess(None, None)
-    
-    
-    #breast_cancer
-    
-    # b = Preprocessing("raw_data/breast-cancer-wisconsin.csv")
-    # b.preprocess(None, '3')
-    
-    #abalone
-    
-    # a = Preprocessing("raw_data/abalone.csv")
-    # a.preprocess()
-    
-    #forestfires
-    
-    # f = Preprocessing("raw_data/forestfires.csv")
-    # f.preprocess()
-    
-    #machine
-    
-    # m = Preprocessing("raw_data/machine.csv")
-    # m.preprocess()
-    
-    
+    pass
     #postprocessing ----------------------
 if __name__=="__main__":
     main_Ian()
