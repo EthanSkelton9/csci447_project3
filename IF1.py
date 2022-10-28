@@ -28,11 +28,34 @@ def predict_value(data):
         return (w @ c(i))[0, 0]
     return f
 
-def error(data):
+def diff(data):
     pred_func = predict_value(data)
     actual_func = lambda i: data.df.at[i, "Target"]
     def f(i):
-        predicted = pred_func(i)
-        actual = actual_func(i)
-        return .5 * math.pow(actual - predicted, 2)
+        return actual_func(i) - pred_func(i)
     return f
+
+def squared_error(data):
+    diff_func = diff(data)
+    def f(i):
+        return .5 * math.pow(diff_func(i), 2)
+    return f
+
+
+
+def graddesc(data):
+    diff_func = diff(data)
+    colvec_func = colvec(data)
+    def f(eta):
+        def f_with_eta(i):
+            x = colvec_func(i)
+            d = diff_func(i)
+            return np.vectorize(lambda xj: eta * d * xj)(x)
+        return f_with_eta
+    return f
+
+
+
+
+
+

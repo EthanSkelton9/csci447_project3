@@ -18,7 +18,7 @@ def main_Ian():
     def f2():
         DD = DataDictionary()
         data = DD.dataobject(True, "Abalone")
-        print(IF1.error(data)(0))
+        print(IF1.graddesc(data)(eta = 0.1)(0))
     return f2()
 
 
