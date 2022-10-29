@@ -28,11 +28,11 @@ def predict_value(data):
     actual_func = lambda i: data.df.at[i, "Target"]
     def f1(eta, eps):
         def f2(i):
+            r = actual_func(i)
+            x = vec_func(i)
             def f3(wi = w_init):
                 def f3_rec(w):
-                    x = vec_func(i)
                     y = (w @ x.reshape(-1, 1))[0, 0]
-                    r = actual_func(i)
                     d = r - y
                     if abs(d) < eps: return y
                     dw = np.vectorize(lambda xj: eta * d * xj)(x)
