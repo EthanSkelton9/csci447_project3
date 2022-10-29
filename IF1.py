@@ -23,6 +23,9 @@ def sigmoid_v(x):
 def rand_w(n, m):
     return (.01 - (-.01)) * np.random.random_sample((n, m)) - .01
 
+def permute(index):
+    return random.sample(index, len(index))
+
 def mean_squared_error(predicted, actual):
     p_vec = predicted.to_numpy()
     a_vec = actual.to_numpy()
@@ -37,32 +40,36 @@ def predict_value(data):
         def f2(i):
             x = vec_func(i)
             r = actual_func(i)
-            def f3(wi = w_init):
-                def f3_rec(w):
-                    y = (w @ x.reshape(-1, 1))[0, 0]
-                    d = r - y
-                    if abs(d) < eps: return y
-                    dw = np.vectorize(lambda xj: eta * d * xj)(x)
-                    return f3_rec(w + dw)
-                return f3_rec(wi)
-            return f3
+            def f2_rec(w):
+                y = (w @ x.reshape(-1, 1))[0, 0]
+                d = r - y
+                if abs(d) < eps: return y
+                dw = np.vectorize(lambda xj: eta * d * xj)(x)
+                return f2_rec(w + dw)
+            return f2_rec(w_init)
         return f2
     return f1
 
 def stochastic_online_gd(data, n):
     w_init = rand_w(1, data.df.shape[1])
     vec_func = vec(data)
-    actual_func = lambda i: data.df.at[i, "Target"]
-    sub_index = random.sample(list(data.df.index), k=n)
-    df = pd.DataFrame(data.df.filter(items=sub_index, axis=0).to_dict())
+    #actual_func = lambda i: data.df.at[i, "Target"]
+    base_index = random.sample(list(data.df.index), k=n)
+    df = pd.DataFrame(data.df.filter(items=base_index, axis=0).to_dict())
     r = df["Target"]
-    y = pd.Series(n * [None], index=sub_index)
-    def f1(eta, eps):
-        def f1_acc(count, index, w):
-            if count == n:
+    y = pd.Series(n * [None], index=base_index)
+    def f(eta, eps):
+        def f_rec(index, w):
+            if len(index) == 0:
                 if mean_squared_error(y, r) < eps: return y
-                return f1_acc(0, random.sample(sub_index, n), w)
-
+                else: return f_rec(permute(index), w)
+            else:
+                i = index[0]
+                x = vec_func(i)
+                y[i] = (w @ x.reshape(-1, 1))[0, 0]
+                dw = np.vectorize(lambda xj: eta * (r[i] - y[i]) * xj)(x)
+                return f_rec(index[1:], w + dw)
+        return f_rec(permute(base_index), w_init)
 
 
 
