@@ -1,3 +1,4 @@
+from neuralNet import Neural_Net
 from preprocessing import Preprocessing
 import pandas as pd
 from DataDictionary import DataDictionary
@@ -26,8 +27,10 @@ def main_Ian():
 
 
 def main():
-    pass
+    DD = DataDictionary()
+    data = DD.dataobject(True, "Abalone")
+    Neural_Net.multi_layer_prop(data, [3])
     #postprocessing ----------------------
 if __name__=="__main__":
-    main_Ian()
-    #main()
+    #main_Ian()
+    main()
