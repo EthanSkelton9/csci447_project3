@@ -83,7 +83,8 @@ def predict_value(data):
 @param r: series of actual target values
 @param eta: the learning rate
 @param index: the index of the data set we are updating
-@return ((permuted index, final weight vector), series of predicted target values
+@return ((permuted index, final weight vector), series of predicted target values)
+@used in: stochastic_online_gd
 '''
 def online_update(vec_func, r, eta, index):
     def f(index_remaining, w, y_acc):
