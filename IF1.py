@@ -13,7 +13,7 @@ def matrixmultiply(matrix):
     return f
 
 def sigmoid(x):
-    return 1 / (1 + math.exp(x))
+    return 1 / (1 + math.exp(-x))
 
 def sigmoid_v(x):
     return np.vectorize(sigmoid)(x)
