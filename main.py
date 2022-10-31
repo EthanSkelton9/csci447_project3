@@ -19,10 +19,14 @@ def main_Ian():
     def f2():
         DD = DataDictionary()
         data = DD.dataobject(True, "Abalone")
-        y = IF1.predict_value(data)(eta = 0.1, eps = 0.01)(2)()
+        y = IF1.predict_value(data)(eta = 0.1, eps = 0.01)(2)
         print(y)
         print(data.df.at[2, "Target"])
-    return f2()
+    def f3():
+        DD = DataDictionary()
+        data = DD.dataobject(True, "Abalone")
+        y = IF1.stochastic_online_gd(data, 30)(eta = 0.1, error_max = 5)
+    return f3()
 
 
 
