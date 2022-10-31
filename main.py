@@ -10,9 +10,9 @@ def main_Ian():
     def f1():
         DD = DataDictionary()
         data = DD.dataobject(True, "Abalone")
-        v = range(10)
+        v = range(11)
         m = np.matrix([v, v, v])
-        x = IF1.value(data)(0)
+        x = IF1.vec(data)(0)
         print(x)
         print(IF1.sigmoid_v(x))
         print(IF1.matrixmultiply(m)(x))
@@ -26,7 +26,7 @@ def main_Ian():
         DD = DataDictionary()
         data = DD.dataobject(True, "Abalone")
         y = IF1.stochastic_online_gd(data, 30)(eta = 0.1, error_max = 5)
-    return f3()
+    return f1()
 
 
 
@@ -36,5 +36,5 @@ def main():
     Neural_Net.multi_layer_prop(data, [3,3,3])
     #postprocessing ----------------------
 if __name__=="__main__":
-    #main_Ian()
-    main()
+    main_Ian()
+    #main()
