@@ -33,7 +33,7 @@ def main_Ian():
 def main():
     DD = DataDictionary()
     data = DD.dataobject(True, "Abalone")
-    Neural_Net.multi_layer_prop(data, [3])
+    Neural_Net.multi_layer_prop(data, [3,3,3])
     #postprocessing ----------------------
 if __name__=="__main__":
     main_Ian()
