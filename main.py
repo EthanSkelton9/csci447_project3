@@ -25,8 +25,8 @@ def main_Ian():
     def f3():
         DD = DataDictionary()
         data = DD.dataobject(True, "Abalone")
-        y = IF1.stochastic_online_gd(data, 30)(eta = 0.1, error_max = 5)
-    return f1()
+        y = IF1.stochastic_online_gd(data, 40)(eta = 0.1, max_error = 10)
+    return f3()
 
 
 
