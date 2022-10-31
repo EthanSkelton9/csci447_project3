@@ -47,7 +47,6 @@ class Preprocessing:
         else:
             for col_name in self.df.columns:
                 self.df[col_name] = self.df[col_name].replace(['?'], [self.replace])
-            print(self.df['Bare Nuclei'].head(30))
                 
             self.df['Bare Nuclei'] = pd.to_numeric(self.df['Bare Nuclei'])
             # print(self.df['Bare Nuclei'][23])
