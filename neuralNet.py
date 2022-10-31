@@ -5,10 +5,6 @@ import IF1
 
 class Neural_Net:
     
-    # def __init__(data, ):
-        
-        
-        
     def vec(data):
         def f(i):
             return np.concatenate(([1], data.df.loc[i, data.features_ohe]))
@@ -97,25 +93,11 @@ class Neural_Net:
             print("do not have any hidden layers or too many hidden layers")
             
         return hidden_layers #return the hidden layers
-                
-        
-        
-             
-    # '''
-    # create_hidden_nodes() will create the hidden layers and place random weights on them
-    # @param data - the data that we are reading in
-    # @param vector - the hidden layers that we are reading in
-    
-    # @returns hidden layers
-    # '''
-    # def create_hidden_nodes(data, vector):
-        
-    
     
     '''
     multi_layer_prop() will create all the matricies that are required for the multi layer propogation to take place
     '''
-    def multi_layer_prop(d, vector, type):
+    def multi_layer_prop(d, vector, classification):
         
          #start local variabls
         data = d.df #set the data to the actual dataframe that we want access to
@@ -125,8 +107,8 @@ class Neural_Net:
         target = None #target classes that we are going for
         target_len = 1 #target length set to 1 if regression
         
-        if type == "class":
-            target = data["Target"].unique() #set target to each target value if class
+        if classification:
+            target = data["Target"].unique() #set target to each target value if classs
             target_len = len(target) #set target length
             
         #end local variables
@@ -134,6 +116,6 @@ class Neural_Net:
         weights = Neural_Net.list_weights(nrows, vector, length, target_len) #create the weights for each layer 
         hidden = Neural_Net.calc_Hidden(weights, data, length) #create the hidden nodes 
         
-        print(hidden[2])
+        print(weights[3])
         
         return hidden
