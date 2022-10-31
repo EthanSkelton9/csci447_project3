@@ -106,7 +106,7 @@ def online_update(vec_func, r, eta, index):
             i = index_remaining[0]                                         #the next index value
             x = vec_func(i)                                                #the next sample vector
             yi = (w @ x.reshape(-1, 1))[0, 0]                              #the new y value
-            dw = np.vectorize(lambda xj: eta * (r[i] - yi) * xj)(x)        #the gradient of the weights
+            dw = eta * (r[i] - yi) * x                                     #the gradient of the weights
             return f(index_remaining[1:], w + dw, y_acc + [(i, yi)])
     return f
 
