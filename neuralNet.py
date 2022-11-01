@@ -174,22 +174,22 @@ class Neural_Net:
     @vector - the vector of hidden layers
     @return weights - list of the weights that are calculated
     '''
-    def list_weights(nrows, vector, length, target_len):
+    def list_weights(nrows, vector, num_hidden, target_len):
         weights = [] #list of weight matrices that we will be returning
         
-        if length == 0:
+        if num_hidden == 0:
             W1 = Neural_Net.create_rand_weights(nrows, target_len)
             weights = [W1]
-        elif length == 1: #one hidden layer
+        elif num_hidden == 1: #one hidden layer
             W1 = Neural_Net.create_rand_weights(nrows, vector[0])
             W2 = Neural_Net.create_rand_weights(vector[0], target_len) #class assignment
             weights = [W1, W2]
-        elif length == 2: #two hidden layers
+        elif num_hidden == 2: #two hidden layers
             W1 = Neural_Net.create_rand_weights(nrows, vector[0])
             W2 = Neural_Net.create_rand_weights(vector[0], vector[1]) 
             W3 = Neural_Net.create_rand_weights(vector[1], target_len) #class assignment
             weights = [W1, W2, W3]
-        elif length == 3: #three hidden layers
+        elif num_hidden == 3: #three hidden layers
             W1 = Neural_Net.create_rand_weights(nrows, vector[0])
             W2 = Neural_Net.create_rand_weights(vector[0], vector[1])
             W3 = Neural_Net.create_rand_weights(vector[1], vector[2])
@@ -209,20 +209,18 @@ class Neural_Net:
     
     @return hidden_layers - returns the hidden layers that we created
     '''
-    def calc_Hidden(weights, row, length):
+    def calc_Hidden(weights, row, num_hidden):
         hidden_layers = []
         
-        if length == 1: #if there is only one hidden layer
+        if num_hidden == 1: #if there is only one hidden layer
             hidden_layers.append(IF1.sigmoid_v(weights[0] @ row)) #create hidden layers for first layer
-        elif length == 2: #if there is two hidden layer
+        elif num_hidden == 2: #if there is two hidden layer
             hidden_layers.append(IF1.sigmoid_v(weights[0] @ row)) #create hidden layers for first layer
             hidden_layers.append(IF1.sigmoid_v(weights[1] @ hidden_layers[0])) #create hidden layer between first and second
-            pass
-        elif length == 3: #if there is three hidden layer
+        elif num_hidden == 3: #if there is three hidden layer
             hidden_layers.append(IF1.sigmoid_v(weights[0] @ row)) #create hidden layers for first layer
             hidden_layers.append(IF1.sigmoid_v(weights[1] @ hidden_layers[0])) #create hidden layer between first and second
             hidden_layers.append(IF1.sigmoid_v(weights[2] @ hidden_layers[1])) #create hidden layer between second and thrid
-            pass
         else:
             print("do not have any hidden layers or too many hidden layers")
             
@@ -235,7 +233,7 @@ class Neural_Net:
         
          #start local variabls
         data = self.data.df #set the data to the actual dataframe that we want access to
-        length =  len(vector) #number of hidden layers we want
+        num_hidden =  len(vector) #number of hidden layers we want
         nrows = len(data) #number of rows in df
         col = data.columns #columns in df
         
@@ -258,8 +256,8 @@ class Neural_Net:
         for i in range(nrows):
             row = new_data.iloc[i].values
             rlen = len(row)
-            w = Neural_Net.list_weights(rlen, vector, length, target_len) #create the weights for each layer 
-            h = Neural_Net.calc_Hidden(w, row, length) #create the hidden nodes
+            w = Neural_Net.list_weights(rlen, vector, num_hidden, target_len) #create the weights for each layer 
+            h = Neural_Net.calc_Hidden(w, row, num_hidden) #create the hidden nodes
             weights.append(w)
             hidden.append(h) 
         print(hidden[0])
