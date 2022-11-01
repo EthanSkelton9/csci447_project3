@@ -31,9 +31,13 @@ def main_Ian():
 
 
 def main():
+    
     DD = DataDictionary()
     data = DD.dataobject(True, "SoyBean")
-    Neural_Net.multi_layer_prop(data, [3,3,4], classification = True)
+    SoyBeans = Neural_Net(data)
+    SoyBeans.multi_layer_prop([3,5], classification = True)
+    
+    
 if __name__=="__main__":
     #main_Ian()
     main()
