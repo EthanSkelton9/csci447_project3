@@ -19,7 +19,7 @@ class Neural_Net:
         @return: numpy row vector of the data with a 1 appended at the beginning for the bias weight
         '''
         def f(i):
-            return np.concatenate(([1], data.df.loc[i, data.features_ohe]))
+            return np.array(data.df.loc[i, data.features_ohe])
 
         return f
 
@@ -90,16 +90,22 @@ class Neural_Net:
         @param y_acc: the current set of accumulated predictions
         @return: new index, final weight matrix, and complete set of predictions after iterated through index
         '''
-        def f(index_remaining, w, y_acc):
+        def f(index_remaining, ws, y_acc):
             if len(index_remaining) == 0:  # if there is nothing more to iterate through
                 y_idx, y_values = zip(*y_acc)  # unzip to get y index and y values
-                return (self.permute(index), w, pd.Series(y_values, y_idx))
+                return (self.permute(index), ws, pd.Series(y_values, y_idx))
             else:
                 i = index_remaining[0]  # the next index value
                 x = vec_func(i)  # the next sample vector
-                yi = (w @ x.reshape(-1, 1))[0, 0]  # the new y value
-                dw = eta * (r[i] - yi) * x  # the gradient of the weights
-                return f(index_remaining[1:], w + dw, y_acc + [(i, yi)])
+                zs = self.calc_Hidden(ws, x, len(ws) - 1)
+                yi = (ws[-1] @ zs[-1])[0, 0]
+                dv = eta * (r[i] - yi) * zs[-1]
+                dw = eta * (r[i] - yi) * ws[-1] @ zs[-1] @ (1 - zs[-1]) @ x
+                grads = [dw, dv] # length of grads is the same length as w
+                new_ws = []
+                for i in range(len(ws)):
+                    new_ws.append(ws[i] + grads[i])
+                return f(index_remaining[1:], new_ws, y_acc + [(i, yi)])
 
         return f
 
@@ -110,7 +116,7 @@ class Neural_Net:
     '''
 
     def stochastic_online_gd(self, data, n):
-        w_init = self.rand_w(1, data.df.shape[1])  # initial randomized weights
+
         vec_func = self.vec(data)  # create vector function for data
         base_index = random.sample(list(data.df.index), k=n)  # create a shuffled index for iteration
         r = data.df.loc[base_index, "Target"]  # column of target values
@@ -120,7 +126,9 @@ class Neural_Net:
         @return: function that uses the hyperparameters to return a series of predicted values
         '''
 
-        def f(eta, max_error):
+        def f(eta, max_error, hidden_vector):
+            nrows = data.df.shape[1] - 1
+            w_init = self.list_weights(nrows, hidden_vector, len(hidden_vector), 1)  # initial randomized weights
             '''
             @param index: the index to iterate through
             @param start_w: the starting weight matrix to use for the epoch
@@ -174,7 +182,7 @@ class Neural_Net:
     @vector - the vector of hidden layers
     @return weights - list of the weights that are calculated
     '''
-    def list_weights(nrows, vector, num_hidden, target_len):
+    def list_weights(self, nrows, vector, num_hidden, target_len):
         weights = [] #list of weight matrices that we will be returning
         
         if num_hidden == 0:
@@ -209,7 +217,7 @@ class Neural_Net:
     
     @return hidden_layers - returns the hidden layers that we created
     '''
-    def calc_Hidden(weights, row, num_hidden):
+    def calc_Hidden(self, weights, row, num_hidden):
         hidden_layers = []
         
         if num_hidden == 1: #if there is only one hidden layer
