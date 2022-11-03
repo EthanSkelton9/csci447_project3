@@ -135,7 +135,7 @@ class Neural_Net:
 
         def f(eta, max_error, hidden_vector):
             nrows = data.df.shape[1] - 1
-            w_init = self.list_weights(nrows, hidden_vector, len(hidden_vector), 1)  # initial randomized weights
+            w_init = self.list_weights(nrows, hidden_vector, 1)  # initial randomized weights
             '''
             @param index: the index to iterate through
             @param start_w: the starting weight matrix to use for the epoch
