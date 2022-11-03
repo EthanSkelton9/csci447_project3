@@ -105,16 +105,18 @@ class Neural_Net:
                 x = vec_func(i)  # the next sample vector
                 zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)
                 yi = (ws[-1] @ zs[-1])[0]
-                new_ws = list(range(len(ws)))
-                a = [r[i] - yi]
+                new_ws = []
+                wzs = zip(ws, zs)
+                error = np.array([r[i] - yi])
                 previous_z = None
-                for j in reversed(range(len(ws))):
-                    new_ws[j] = ws[j] + eta * np.outer(a * self.dsigmoid_v(previous_z), zs[j])
-                    a = a @ ws[j]
-                    previous_z = zs[j]
+                for wz in list(wzs)[::-1]:
+                    new_ws = [wz[0] + eta * np.outer(error * self.dsigmoid_v(previous_z), wz[1])] + new_ws
+                    error = error @ wz[0]
+                    previous_z = wz[1]
                 return f(index_remaining[1:], new_ws, y_acc + [(i, yi)])
-
         return f
+
+
 
     '''
     @param data: the data set we are using

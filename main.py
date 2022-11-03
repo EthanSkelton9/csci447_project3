@@ -30,7 +30,7 @@ def main_Ian():
         DD = DataDictionary()
         data = DD.dataobject(True, "Abalone")
         NN = Neural_Net(data)
-        y = NN.stochastic_online_gd(data, 20)(eta=0.1, max_error=20, hidden_vector = [8, 4])
+        y = NN.stochastic_online_gd(data, 20)(eta=0.1, max_error=10, hidden_vector = [8, 4])
     return f4()
 
 
