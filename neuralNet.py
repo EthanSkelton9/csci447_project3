@@ -72,6 +72,10 @@ class Neural_Net:
     @return: the mean squared error
     '''
     def mean_squared_error(self, predicted, actual):
+        print("Predicted")
+        print(predicted)
+        print("Actual")
+        print(actual)
         return math.pow(np.linalg.norm(predicted.to_numpy() - actual.to_numpy()), 2) / len(predicted)
 
     '''
@@ -98,13 +102,15 @@ class Neural_Net:
                 i = index_remaining[0]  # the next index value
                 x = vec_func(i)  # the next sample vector
                 zs = self.calc_Hidden(ws, x, len(ws) - 1)
-                yi = (ws[-1] @ zs[-1])[0, 0]
+                last_z = np.array(zs[-1])
+                yi = (ws[-1] @ last_z)
+                yi = yi[0]
                 dv = eta * (r[i] - yi) * zs[-1]
-                dw = eta * (r[i] - yi) * ws[-1] @ zs[-1] @ (1 - zs[-1]) @ x
+                dw = (eta * (r[i] - yi)) * np.outer(ws[-1] * last_z * (1 - last_z), x)
                 grads = [dw, dv] # length of grads is the same length as w
                 new_ws = []
-                for i in range(len(ws)):
-                    new_ws.append(ws[i] + grads[i])
+                for j in range(len(ws)):
+                    new_ws.append(ws[j] + grads[j])
                 return f(index_remaining[1:], new_ws, y_acc + [(i, yi)])
 
         return f
@@ -146,11 +152,12 @@ class Neural_Net:
             '''
 
             def evaluate(index, w, y=None):
-                if y is None or self.mean_squared_error(y, r) > max_error:  # if the predictions have not converged yet
+                if y is None or self.mean_squared_error(y, data.df.loc[y.index, "Target"]) > max_error:  # if the predictions have not converged yet
                     try:
+                        print("New Epoch")
                         new_index, final_w, new_y = epoch(index, w)  # run through another epoch
                         return evaluate(new_index, final_w, new_y)  # evaluate to see if there is convergence
-                    except:
+                    except RecursionError:
                         print("Too Much Recursion!")
                         return y  # return the last prediction before recursion error
                 else:
