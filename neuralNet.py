@@ -50,6 +50,12 @@ class Neural_Net:
     def sigmoid_v(self, x):
         return np.vectorize(self.sigmoid)(x)
 
+    def dsigmoid_v(self, x):
+        if x is None:
+            return 1
+        else:
+            return x * (1 - x)
+
     '''
     @param n: the row dimension
     @param m: the column dimension
@@ -72,10 +78,6 @@ class Neural_Net:
     @return: the mean squared error
     '''
     def mean_squared_error(self, predicted, actual):
-        print("Predicted")
-        print(predicted)
-        print("Actual")
-        print(actual)
         return math.pow(np.linalg.norm(predicted.to_numpy() - actual.to_numpy()), 2) / len(predicted)
 
     '''
@@ -101,16 +103,15 @@ class Neural_Net:
             else:
                 i = index_remaining[0]  # the next index value
                 x = vec_func(i)  # the next sample vector
-                zs = self.calc_Hidden(ws, x, len(ws) - 1)
-                last_z = np.array(zs[-1])
-                yi = (ws[-1] @ last_z)
-                yi = yi[0]
-                dv = eta * (r[i] - yi) * zs[-1]
-                dw = (eta * (r[i] - yi)) * np.outer(ws[-1] * last_z * (1 - last_z), x)
-                grads = [dw, dv] # length of grads is the same length as w
-                new_ws = []
-                for j in range(len(ws)):
-                    new_ws.append(ws[j] + grads[j])
+                zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)
+                yi = (ws[-1] @ zs[-1])[0]
+                new_ws = list(range(len(ws)))
+                a = [r[i] - yi]
+                previous_z = None
+                for j in reversed(range(len(ws))):
+                    new_ws[j] = ws[j] + eta * np.outer(a * self.dsigmoid_v(previous_z), zs[j])
+                    a = a @ ws[j]
+                    previous_z = zs[j]
                 return f(index_remaining[1:], new_ws, y_acc + [(i, yi)])
 
         return f
@@ -238,7 +239,8 @@ class Neural_Net:
             hidden_layers.append(IF1.sigmoid_v(weights[2] @ hidden_layers[1])) #create hidden layer between second and thrid
         else:
             print("do not have any hidden layers or too many hidden layers")
-            
+
+        print("Hidden Layers: {}".format(hidden_layers))
         return hidden_layers #return the hidden layers
     
     '''
