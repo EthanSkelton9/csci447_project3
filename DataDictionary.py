@@ -49,7 +49,8 @@ class DataDictionary:
          ]
         replace = None
         target_name = 'Rings'
-        return (name, file, columns, target_name, replace)
+        classification = False
+        return (name, file, columns, target_name, replace, False)
 
     def breastcancer(self):
         name = "BreastCancer"
@@ -68,7 +69,8 @@ class DataDictionary:
         ]
         target_name = 'Class'
         replace = '3'
-        return (name, file, columns, target_name, replace)
+        classification = True
+        return (name, file, columns, target_name, replace, classification)
 
     def forestfires(self):
         name = "ForestFires"
@@ -89,7 +91,8 @@ class DataDictionary:
         ]
         replace = None
         target_name = 'Area'
-        return (name, file, columns, target_name, replace)
+        classification = False
+        return (name, file, columns, target_name, replace, classification)
 
     def glass(self):
         name = "Glass"
@@ -108,7 +111,8 @@ class DataDictionary:
         ]
         target_name = 'Class'
         replace = None
-        return (name, file, columns, target_name, replace)
+        classification = True
+        return (name, file, columns, target_name, replace, classification)
 
     def hardware(self):
         name = "Hardware"
@@ -126,7 +130,8 @@ class DataDictionary:
         ]
         target_name = 'PRP'
         replace = None
-        return (name, file, columns, target_name, replace)
+        classification = False
+        return (name, file, columns, target_name, replace, classification)
 
     def soybean(self):
         name = "SoyBean"
@@ -170,4 +175,5 @@ class DataDictionary:
          ]
         replace = None
         target_name = 'Class'
-        return (name, file, columns, target_name, replace)
+        classification = True
+        return (name, file, columns, target_name, replace, classification)

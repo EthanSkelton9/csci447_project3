@@ -41,7 +41,7 @@ class Neural_Net:
     @return: the sigmoid value
     '''
     def sigmoid(self, x):
-        return 1 / (1 + math.exp(-x))
+        return 1 / (1 + np.exp(-x))
 
     '''
     @param x: a vector of real numbers
@@ -70,6 +70,11 @@ class Neural_Net:
     '''
     def permute(self, index):
         return random.sample(index, len(index))
+
+    def classvec(self, class_index):
+        def f(cl):
+            return np.array(class_index.map(lambda x: int(cl == x))).reshape(-1, 1)
+        return f
 
 
     '''
@@ -105,9 +110,13 @@ class Neural_Net:
                 x = vec_func(i)  # the next sample vector
                 zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)
                 yi = (ws[-1] @ zs[-1])[0]
+                if self.data.classification:
+                    yi = self.sigmoid_v(yi)
+                    error = np.array([r[i] - yi])
+                yi = (ws[-1] @ zs[-1])[0]
                 new_ws = []
                 wzs = zip(ws, zs)
-                error = np.array([r[i] - yi])
+
                 previous_z = None
                 for wz in list(wzs)[::-1]:
                     new_ws = [wz[0] + eta * np.outer(error * self.dsigmoid_v(previous_z), wz[1])] + new_ws
@@ -129,6 +138,12 @@ class Neural_Net:
         vec_func = self.vec(data)  # create vector function for data
         base_index = random.sample(list(data.df.index), k=n)  # create a shuffled index for iteration
         r = data.df.loc[base_index, "Target"]  # column of target values
+        if data.classification:
+            classes = data.df["Target"].unique()
+            class_vec_func = self.classvec(pd.Index(classes))
+            target_length = len(classes)
+        else:
+            target_length = 1
         '''
         @param eta: the learning rate
         @param max_error: the maximum tolerance used
@@ -137,7 +152,7 @@ class Neural_Net:
 
         def f(eta, max_error, hidden_vector):
             nrows = data.df.shape[1] - 1
-            w_init = self.list_weights(nrows, hidden_vector, 1)  # initial randomized weights
+            w_init = self.list_weights(nrows, hidden_vector, target_length)  # initial randomized weights
             '''
             @param index: the index to iterate through
             @param start_w: the starting weight matrix to use for the epoch

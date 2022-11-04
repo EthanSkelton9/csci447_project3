@@ -10,13 +10,14 @@ class Preprocessing:
     __init__: will initialize the preprocessing class based on the location that the data is
     @param data_loc: the string location where the file we want to read in is
     '''
-    def __init__(self, name, data_loc, columns, target_name, replace):
+    def __init__(self, name, data_loc, columns, target_name, replace, classification):
         self.name = name
         self.data_loc = data_loc #set the data location of the class equal to the data location that was sent in
         self.df = None #set the actual data to None for the moment
         self.columns = columns #we need to say what the features are
         self.target_name = target_name
         self.replace = replace
+        self.classification = classification
 
 
     def __str__(self):
