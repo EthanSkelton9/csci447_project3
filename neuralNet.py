@@ -50,6 +50,10 @@ class Neural_Net:
     def sigmoid_v(self, x):
         return np.vectorize(self.sigmoid)(x)
 
+    '''
+    @param x: a vector of real numbers
+    @return: a vector where each element is the respective derivative sigmoid value
+    '''
     def dsigmoid_v(self, x):
         if x is None:
             return 1
@@ -71,11 +75,19 @@ class Neural_Net:
     def permute(self, index):
         return random.sample(index, len(index))
 
+    '''
+    @param: an ordered index of the classes
+    @return: a function that takes an index of the data and returns a vector with a one in its corresponding class
+    '''
     def classvec(self, class_index):
-        def f(cl):
+        '''
+        @param i: an integer index
+        @return: vector with all zeros except in the position of the example's class
+        '''
+        def f(i):
+            cl = self.data.df.at[i, "Target"]
             return np.array(class_index.map(lambda x: int(cl == x))).reshape(-1, 1)
         return f
-
 
     '''
     @param predicted: a series of predicted values
@@ -109,14 +121,14 @@ class Neural_Net:
                 i = index_remaining[0]  # the next index value
                 x = vec_func(i)  # the next sample vector
                 zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)
-                yi = (ws[-1] @ zs[-1])[0]
                 if self.data.classification:
-                    yi = self.sigmoid_v(yi)
+                    yi = self.sigmoid_v((ws[-1] @ zs[-1]))
                     error = np.array([r[i] - yi])
-                yi = (ws[-1] @ zs[-1])[0]
+                else:
+                    yi = (ws[-1] @ zs[-1])[0]
+                    error = np.array([r[i] - yi])
                 new_ws = []
                 wzs = zip(ws, zs)
-
                 previous_z = None
                 for wz in list(wzs)[::-1]:
                     new_ws = [wz[0] + eta * np.outer(error * self.dsigmoid_v(previous_z), wz[1])] + new_ws
