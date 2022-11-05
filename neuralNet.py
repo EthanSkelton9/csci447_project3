@@ -108,35 +108,43 @@ class Neural_Net:
     @used in: stochastic_online_gd
     '''
 
-    def online_update(self, vec_func, r, eta, index):
+    def alpha_weights(self, ws, alpha):
+        return ws.map(lambda w: np.concatenate((alpha * np.eye(w.shape[1]), (1 - alpha) * np.eye(w.shape[1])), axis=0))
+
+    def online_update(self, vec_func, r, eta, alpha_ws, index):
         '''
         @param index_remaining: index left to iterate through
         @param w: the current weight matrix
         @param y_acc: the current set of accumulated predictions
         @return: new index, final weight matrix, and complete set of predictions after iterated through index
         '''
-        def f(index_remaining, ws, y_acc):
+        def f(index_remaining, ws, ss, y_acc):
             if len(index_remaining) == 0:  # if there is nothing more to iterate through
                 y_idx, y_values = zip(*y_acc)  # unzip to get y index and y values
-                return (self.permute(index), ws, pd.Series(y_values, y_idx))
+                return (self.permute(index), ws, ss, pd.Series(y_values, y_idx))
             else:
                 i = index_remaining[0]  # the next index value
                 x = vec_func(i)  # the next sample vector
                 zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)
                 if self.data.classification:
                     yi = np.vectorize(np.exp)((ws[-1] @ zs[-1])).reshape(1, -1)
-                    yi = np.vectorize(lambda yij: yij / np.sum(yi))(yi)
+                    yi = yi / np.sum(yi)
                 else:
-                    yi = (ws[-1] @ zs[-1])[0]
-                error = np.array([r(i) - yi])
-                new_ws = []
+                    yi = (ws.iloc[-1] @ zs[-1])[0]
+                error = - np.array([r(i) - yi])
+                grads = []
                 wzs = zip(ws, zs)
                 previous_z = None
                 for wz in list(wzs)[::-1]:
-                    new_ws = [wz[0] + eta * np.outer(error * self.dsigmoid_v(previous_z), wz[1])] + new_ws
+                    grads = [np.outer(error * self.dsigmoid_v(previous_z), wz[1])] + grads
                     error = error @ wz[0]
                     previous_z = wz[1]
-                return f(index_remaining[1:], new_ws, y_acc + [(i, yi)])
+                if alpha_ws is not None:
+                    sgas = pd.Series(zip(zip(ss, grads), alpha_ws))
+                    grads = sgas.map(lambda sga: np.concatenate(sga[0], axis=1) @ sga[1])
+                new_ws = pd.Series(zip(ws, grads)).map(lambda wg: wg[0] - eta * wg[1])
+                new_ss = None if ss is None else grads
+                return f(index_remaining[1:], new_ws, new_ss, y_acc + [(i, yi)])
         return f
 
 
@@ -147,8 +155,8 @@ class Neural_Net:
     @return a function that takes hyperparameters eta and max error and returns a series of predicted target values
     '''
 
-    def stochastic_online_gd(self, data, n):
-
+    def stochastic_online_gd(self, data, n = None):
+        if n is None: n = data.df.shape[0]
         vec_func = self.vec(data)  # create vector function for data
         base_index = random.sample(list(data.df.index), k=n)  # create a shuffled index for iteration
         if data.classification:
@@ -164,17 +172,19 @@ class Neural_Net:
         @return: function that uses the hyperparameters to return a series of predicted values
         '''
 
-        def f(eta, max_error, hidden_vector):
+        def f(eta, max_error, hidden_vector, alpha = None):
             nrows = data.df.shape[1] - 1
-            w_init = self.list_weights(nrows, hidden_vector, target_length)  # initial randomized weights
+            ws_init = pd.Series(self.list_weights(nrows, hidden_vector, target_length))  # initial randomized weights
+            ss_init = None if alpha is None else ws_init.map(lambda w: np.zeros(w.shape))
+            alpha_ws = None if alpha is None else self.alpha_weights(ws_init, alpha)
             '''
             @param index: the index to iterate through
             @param start_w: the starting weight matrix to use for the epoch
             @return: new permuted index, weight matrix learned from data, and a series of predicted values
             '''
 
-            def epoch(index, start_w):
-                return self.online_update(vec_func, r, eta, index)(index, start_w, [])
+            def epoch(index, start_w, start_s, alpha_ws):
+                return self.online_update(vec_func, r, eta, alpha_ws, index)(index, start_w, start_s, [])
 
             '''
             @param index: index after an epoch or starting the first epoch
@@ -183,12 +193,12 @@ class Neural_Net:
             @return: the final prediction 
             '''
 
-            def evaluate(index, w, y=None):
+            def evaluate(index, w, s, y=None):
                 if y is None or self.mean_squared_error(y, data.df.loc[y.index, "Target"]) > max_error:  # if the predictions have not converged yet
                     try:
                         print("New Epoch")
-                        new_index, final_w, new_y = epoch(index, w)  # run through another epoch
-                        return evaluate(new_index, final_w, new_y)  # evaluate to see if there is convergence
+                        new_index, final_w, final_s, new_y = epoch(index, w, s, alpha_ws)  # run through another epoch
+                        return evaluate(new_index, final_w, final_s, new_y)  # evaluate to see if there is convergence
                     except RecursionError:
                         print("Too Much Recursion!")
                         return y  # return the last prediction before recursion error
@@ -198,7 +208,7 @@ class Neural_Net:
                     print(results_df)
                     return y  # return final prediction
 
-            return evaluate(base_index, w_init)
+            return evaluate(base_index, ws_init, ss_init)
 
         return f
 
