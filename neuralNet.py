@@ -109,7 +109,17 @@ class Neural_Net:
         if data.classification:
             return self.cross_entropy(y,  r)
         else:
-            return self.mean_squared_error(y, data.df.loc[y.index, "Target"])  
+            return self.mean_squared_error(y, data.df.loc[y.index, "Target"]) 
+        
+    def prediction(self, predicted, classes):
+        pred_class = predicted.copy()
+        # print(predicted)
+        for i in predicted.index:
+            index = (np.where(predicted[i][0] == max(predicted[i][0])))[0][0]
+            pred_class[i] = classes[index]
+        # print(pred_class)
+        return pred_class
+ 
         
 
     '''
@@ -206,8 +216,12 @@ class Neural_Net:
                         print("Too Much Recursion!")
                         return y  # return the last prediction before recursion error
                 else:
-                    results_df = pd.DataFrame(y)
-                    results_df["Target"] = data.df["Target"]
+                    
+                    if data.classification:
+                        results_df = pd.DataFrame(self.prediction(y, classes))
+                    else:
+                        results_df = pd.DataFrame(y)
+                    results_df["Target"] = data.df["Target"]    
                     print(results_df)
                     return y  # return final prediction
 
