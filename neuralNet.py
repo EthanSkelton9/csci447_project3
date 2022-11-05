@@ -98,6 +98,19 @@ class Neural_Net:
     '''
     def mean_squared_error(self, predicted, actual):
         return math.pow(np.linalg.norm(predicted.to_numpy() - actual.to_numpy()), 2) / len(predicted)
+    
+    def cross_entropy(self, predicted, targetvec):
+        error = 0
+        for i in predicted.index:
+            error =+ -(targetvec(i) @ np.log(predicted[i][0]))
+        return error
+    
+    def calc_error(self,y,r,data):
+        if data.classification:
+            return self.cross_entropy(y,  r)
+        else:
+            return self.mean_squared_error(y, data.df.loc[y.index, "Target"])  
+        
 
     '''
     @param vec_func: function that takes an index value and gives the sample from the dataset as a vector
@@ -183,8 +196,8 @@ class Neural_Net:
             @return: the final prediction 
             '''
 
-            def evaluate(index, w, y=None):
-                if y is None or self.mean_squared_error(y, data.df.loc[y.index, "Target"]) > max_error:  # if the predictions have not converged yet
+            def evaluate(index, w, y=None):             
+                if y is None or self.calc_error(y, r, data) > max_error:  # if the predictions have not converged yet
                     try:
                         print("New Epoch")
                         new_index, final_w, new_y = epoch(index, w)  # run through another epoch
