@@ -216,13 +216,8 @@ class Neural_Net:
             @return: the final prediction 
             '''
 
-<<<<<<< HEAD
             def evaluate(index, w, s, y=None):
-                if y is None or self.mean_squared_error(y, data.df.loc[y.index, "Target"]) > max_error:  # if the predictions have not converged yet
-=======
-            def evaluate(index, w, y=None):             
                 if y is None or self.calc_error(y, r, data) > max_error:  # if the predictions have not converged yet
->>>>>>> 62adf4b0e56c5760238b16c7c69d6aec0579d031
                     try:
                         print("New Epoch")
                         new_index, final_w, final_s, new_y = epoch(index, w, s, alpha_ws)  # run through another epoch
