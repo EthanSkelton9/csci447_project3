@@ -28,9 +28,9 @@ def main_Ian():
         y = IF1.stochastic_online_gd(data, 40)(eta = 0.1, max_error = 10)
     def f4():
         DD = DataDictionary()
-        data = DD.dataobject(True, "Abalone")
+        data = DD.dataobject(True, "SoyBean")
         NN = Neural_Net(data)
-        y = NN.stochastic_online_gd(data, 20)(eta=0.1, max_error=15, hidden_vector = [8, 4, 2, 1])
+        y = NN.stochastic_online_gd(data, 20)(eta=0.1, max_error=15, hidden_vector = [8, 4])
     return f4()
 
 

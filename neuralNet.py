@@ -79,15 +79,17 @@ class Neural_Net:
     @param: an ordered index of the classes
     @return: a function that takes an index of the data and returns a vector with a one in its corresponding class
     '''
-    def classvec(self, class_index):
+    def targetvec(self, classification, class_index = None):
         '''
         @param i: an integer index
         @return: vector with all zeros except in the position of the example's class
         '''
-        def f(i):
+        def f_classification(i):
             cl = self.data.df.at[i, "Target"]
-            return np.array(class_index.map(lambda x: int(cl == x))).reshape(-1, 1)
-        return f
+            return np.array(class_index.map(lambda x: int(cl == x)))
+        def f_regression(i):
+            return self.data.df.at[i, "Target"]
+        return (f_classification if classification else f_regression)
 
     '''
     @param predicted: a series of predicted values
@@ -122,11 +124,11 @@ class Neural_Net:
                 x = vec_func(i)  # the next sample vector
                 zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)
                 if self.data.classification:
-                    yi = self.sigmoid_v((ws[-1] @ zs[-1]))
-                    error = np.array([r[i] - yi])
+                    yi = np.vectorize(np.exp)((ws[-1] @ zs[-1])).reshape(1, -1)
+                    yi = np.vectorize(lambda yij: yij / np.sum(yi))(yi)
                 else:
                     yi = (ws[-1] @ zs[-1])[0]
-                    error = np.array([r[i] - yi])
+                error = np.array([r(i) - yi])
                 new_ws = []
                 wzs = zip(ws, zs)
                 previous_z = None
@@ -149,12 +151,12 @@ class Neural_Net:
 
         vec_func = self.vec(data)  # create vector function for data
         base_index = random.sample(list(data.df.index), k=n)  # create a shuffled index for iteration
-        r = data.df.loc[base_index, "Target"]  # column of target values
         if data.classification:
             classes = data.df["Target"].unique()
-            class_vec_func = self.classvec(pd.Index(classes))
+            r = self.targetvec(True, pd.Index(classes))
             target_length = len(classes)
         else:
+            r = self.targetvec(False)
             target_length = 1
         '''
         @param eta: the learning rate
@@ -192,7 +194,7 @@ class Neural_Net:
                         return y  # return the last prediction before recursion error
                 else:
                     results_df = pd.DataFrame(y)
-                    results_df["Target"] = r
+                    results_df["Target"] = data.df["Target"]
                     print(results_df)
                     return y  # return final prediction
 
