@@ -98,6 +98,29 @@ class Neural_Net:
     '''
     def mean_squared_error(self, predicted, actual):
         return math.pow(np.linalg.norm(predicted.to_numpy() - actual.to_numpy()), 2) / len(predicted)
+    
+    def cross_entropy(self, predicted, targetvec):
+        error = 0
+        for i in predicted.index:
+            error =+ -(targetvec(i) @ np.log(predicted[i][0]))
+        return error
+    
+    def calc_error(self,y,r,data):
+        if data.classification:
+            return self.cross_entropy(y,  r)
+        else:
+            return self.mean_squared_error(y, data.df.loc[y.index, "Target"]) 
+        
+    def prediction(self, predicted, classes):
+        pred_class = predicted.copy()
+        # print(predicted)
+        for i in predicted.index:
+            index = (np.where(predicted[i][0] == max(predicted[i][0])))[0][0]
+            pred_class[i] = classes[index]
+        # print(pred_class)
+        return pred_class
+ 
+        
 
     '''
     @param vec_func: function that takes an index value and gives the sample from the dataset as a vector
@@ -193,8 +216,13 @@ class Neural_Net:
             @return: the final prediction 
             '''
 
+<<<<<<< HEAD
             def evaluate(index, w, s, y=None):
                 if y is None or self.mean_squared_error(y, data.df.loc[y.index, "Target"]) > max_error:  # if the predictions have not converged yet
+=======
+            def evaluate(index, w, y=None):             
+                if y is None or self.calc_error(y, r, data) > max_error:  # if the predictions have not converged yet
+>>>>>>> 62adf4b0e56c5760238b16c7c69d6aec0579d031
                     try:
                         print("New Epoch")
                         new_index, final_w, final_s, new_y = epoch(index, w, s, alpha_ws)  # run through another epoch
@@ -203,8 +231,12 @@ class Neural_Net:
                         print("Too Much Recursion!")
                         return y  # return the last prediction before recursion error
                 else:
-                    results_df = pd.DataFrame(y)
-                    results_df["Target"] = data.df["Target"]
+                    
+                    if data.classification:
+                        results_df = pd.DataFrame(self.prediction(y, classes))
+                    else:
+                        results_df = pd.DataFrame(y)
+                    results_df["Target"] = data.df["Target"]    
                     print(results_df)
                     return y  # return final prediction
 
