@@ -3,6 +3,7 @@ import math
 import numpy as np
 import IF1
 import random
+from tail_recursive import tail_recursive
 
 class Neural_Net:
 
@@ -131,7 +132,6 @@ class Neural_Net:
     @used in: stochastic_online_gd
     '''
 
-
     def online_update(self, vec_func, r, eta, alpha, index):
         '''
         @param index_remaining: index left to iterate through
@@ -139,6 +139,8 @@ class Neural_Net:
         @param y_acc: the current set of accumulated predictions
         @return: new index, final weight matrix, and complete set of predictions after iterated through index
         '''
+
+        @tail_recursive
         def f(index_remaining, ws, ss, y_acc):
             if len(index_remaining) == 0:  # if there is nothing more to iterate through
                 y_idx, y_values = zip(*y_acc)  # unzip to get y index and y values
@@ -148,7 +150,7 @@ class Neural_Net:
                 x = vec_func(i)  # the next sample vector
                 zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)                   # the input and hidden layers
                 if self.data.classification:
-                    yi = np.exp((ws[-1] @ zs[-1])).reshape(1, -1)                 # gives the exponent at each component
+                    yi = np.exp(ws.iloc[-1] @ zs[-1]).reshape(1, -1)                 # gives the exponent at each component
                     yi = yi / np.sum(yi)                                          # normalizes the vector
                 else:
                     yi = (ws.iloc[-1] @ zs[-1])[0]                                # return a real value
@@ -164,7 +166,7 @@ class Neural_Net:
                     grads = pd.Series(zip(ss, grads)).map(lambda sg: alpha * sg[0] + (1-alpha) * sg[1]) #average grad
                 new_ws = pd.Series(zip(ws, grads)).map(lambda wg: wg[0] + eta * wg[1])           #calculate new weights
                 new_ss = None if ss is None else grads                                        #calculate new gradients
-                return f(index_remaining[1:], new_ws, new_ss, y_acc + [(i, yi)])
+                return f.tail_call(index_remaining[1:], new_ws, new_ss, y_acc + [(i, yi)])
         return f
 
 
@@ -230,7 +232,27 @@ class Neural_Net:
                     print(results_df)
                     return y  # return final prediction
 
-            return evaluate(base_index, ws_init, ss_init)
+            def evaluate2(index, w, s, y = None, prev_y = None, prev_error = None):
+                if y is None:
+                    new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)  # run through first epoch
+                    return evaluate2(new_index, final_w, final_s, new_y)
+                else:
+                    if prev_error is None:
+                        error = self.calc_error(y, r, self.data)                         # calculate error
+                        new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)
+                        return evaluate2(new_index, final_w, final_s, new_y, y, error)
+                    else:
+                        error = self.calc_error(y, r, self.data)
+                        if error < prev_error:
+                            new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)
+                            return evaluate2(new_index, final_w, final_s, new_y, y, error)
+                        else:
+                            results_df = pd.DataFrame(prev_y)
+                            results_df["Target"] = self.data.df["Target"]
+                            print(results_df)
+                            return prev_y
+
+            return evaluate2(base_index, ws_init, ss_init)
 
         return f
 
