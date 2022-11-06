@@ -177,6 +177,7 @@ class Neural_Net:
     @return a function that takes hyperparameters eta and max error and returns a series of predicted target values
     '''
     def stochastic_online_gd(self, n = None):
+        #Hello World
         if n is None: n = self.data.df.shape[0]
         vec_func = self.vec(self.data)  # create vector function for data
         base_index = random.sample(list(self.data.df.index), k=n)  # create a shuffled index for iteration
