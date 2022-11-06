@@ -222,8 +222,8 @@ class Neural_Net:
                     else:
                         results_df = pd.DataFrame(y)
                     results_df["Target"] = data.df["Target"]    
-                    print(results_df)
-                    return y  # return final prediction
+                    #print(results_df)
+                    return results_df  # return final prediction
 
             return evaluate(base_index, w_init)
 
@@ -326,3 +326,36 @@ class Neural_Net:
         
         
         return hidden
+    
+    def classification_error(self, predictions):
+        error = 0
+        length = len(predictions)
+        for i in predictions.index:
+            pred = predictions.loc[i][0]
+            target = predictions.loc[i]["Target"]
+            if pred == target:
+                error += 1
+            else:
+                error = error
+        return error/length
+    
+    def tuning(self, vector):
+        num_hidden = len(vector) + 1
+        vector = vector + [0]
+        
+        if self.data.classification:
+            prev_error = -1
+            error = 0
+            i = 0
+            while prev_error <= error:
+                if error != 0:
+                    prev_error = error
+                vector[num_hidden - 1] = i + 1
+                print(vector)
+                predictions = self.stochastic_online_gd(self.data, 20)(eta=0.1, max_error=15, hidden_vector = vector)
+                print(predictions)
+                error = self.classification_error(predictions)
+                print(error)
+                i += 1
+        else:
+            pass

@@ -30,7 +30,7 @@ def main_Ian():
         DD = DataDictionary()
         data = DD.dataobject(True, "BreastCancer")
         NN = Neural_Net(data)
-        y = NN.stochastic_online_gd(data, 20)(eta=0.1, max_error=15, hidden_vector = [8, 4])
+        y = NN.tuning([3,1,1])
     return f4()
 
 
