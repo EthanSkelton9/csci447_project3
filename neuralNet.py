@@ -3,6 +3,7 @@ import math
 import numpy as np
 import IF1
 import random
+from tail_recursive import tail_recursive
 
 class Neural_Net:
 
@@ -85,7 +86,7 @@ class Neural_Net:
         @return: vector with all zeros except in the position of the example's class
         '''
         def f_classification(i):
-            cl = self.data.df.at[i, "Target"]
+            cl = self.data.df.at[i, "Target"]                         # Gives the class at this index
             return np.array(class_index.map(lambda x: int(cl == x)))
         def f_regression(i):
             return self.data.df.at[i, "Target"]
@@ -131,35 +132,41 @@ class Neural_Net:
     @used in: stochastic_online_gd
     '''
 
-    def online_update(self, vec_func, r, eta, index):
+    def online_update(self, vec_func, r, eta, alpha, index):
         '''
         @param index_remaining: index left to iterate through
         @param w: the current weight matrix
         @param y_acc: the current set of accumulated predictions
         @return: new index, final weight matrix, and complete set of predictions after iterated through index
         '''
-        def f(index_remaining, ws, y_acc):
+
+        @tail_recursive
+        def f(index_remaining, ws, ss, y_acc):
             if len(index_remaining) == 0:  # if there is nothing more to iterate through
                 y_idx, y_values = zip(*y_acc)  # unzip to get y index and y values
-                return (self.permute(index), ws, pd.Series(y_values, y_idx))
+                return (self.permute(index), ws, ss, pd.Series(y_values, y_idx))
             else:
                 i = index_remaining[0]  # the next index value
                 x = vec_func(i)  # the next sample vector
-                zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)
+                zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)                   # the input and hidden layers
                 if self.data.classification:
-                    yi = np.vectorize(np.exp)((ws[-1] @ zs[-1])).reshape(1, -1)
-                    yi = np.vectorize(lambda yij: yij / np.sum(yi))(yi)
+                    yi = np.exp(ws.iloc[-1] @ zs[-1]).reshape(1, -1)                 # gives the exponent at each component
+                    yi = yi / np.sum(yi)                                          # normalizes the vector
                 else:
-                    yi = (ws[-1] @ zs[-1])[0]
-                error = np.array([r(i) - yi])
-                new_ws = []
+                    yi = (ws.iloc[-1] @ zs[-1])[0]                                # return a real value
+                error = np.array([r(i) - yi])                                     # return errors at each of the outputs
+                grads = []
                 wzs = zip(ws, zs)
                 previous_z = None
                 for wz in list(wzs)[::-1]:
-                    new_ws = [wz[0] + eta * np.outer(error * self.dsigmoid_v(previous_z), wz[1])] + new_ws
-                    error = error @ wz[0]
+                    grads = [np.outer(error * self.dsigmoid_v(previous_z), wz[1])] + grads   # create gradient
+                    error = error @ wz[0]                                                   # back propagate error
                     previous_z = wz[1]
-                return f(index_remaining[1:], new_ws, y_acc + [(i, yi)])
+                if alpha is not None:
+                    grads = pd.Series(zip(ss, grads)).map(lambda sg: alpha * sg[0] + (1-alpha) * sg[1]) #average grad
+                new_ws = pd.Series(zip(ws, grads)).map(lambda wg: wg[0] + eta * wg[1])           #calculate new weights
+                new_ss = None if ss is None else grads                                        #calculate new gradients
+                return f.tail_call(index_remaining[1:], new_ws, new_ss, y_acc + [(i, yi)])
         return f
 
 
@@ -169,35 +176,35 @@ class Neural_Net:
     @param n: the size of the subset of the data we are using
     @return a function that takes hyperparameters eta and max error and returns a series of predicted target values
     '''
-
-    def stochastic_online_gd(self, data, n):
-
-        vec_func = self.vec(data)  # create vector function for data
-        base_index = random.sample(list(data.df.index), k=n)  # create a shuffled index for iteration
-        if data.classification:
-            classes = data.df["Target"].unique()
-            r = self.targetvec(True, pd.Index(classes))
-            target_length = len(classes)
+    def stochastic_online_gd(self, n = None):
+        if n is None: n = self.data.df.shape[0]
+        vec_func = self.vec(self.data)  # create vector function for data
+        base_index = random.sample(list(self.data.df.index), k=n)  # create a shuffled index for iteration
+        if self.data.classification:
+            classes = self.data.df["Target"].unique()        # create unique class list
+            r = self.targetvec(True, pd.Index(classes))      # create function that returns vector of a class
+            target_length = len(classes)                     # target length needs to be number of classes
         else:
-            r = self.targetvec(False)
-            target_length = 1
+            r = self.targetvec(False)                        # create function that returns class
+            target_length = 1                                # target length is just 1 for returning a real value
         '''
         @param eta: the learning rate
         @param max_error: the maximum tolerance used
         @return: function that uses the hyperparameters to return a series of predicted values
         '''
 
-        def f(eta, max_error, hidden_vector):
-            nrows = data.df.shape[1] - 1
-            w_init = self.list_weights(nrows, hidden_vector, target_length)  # initial randomized weights
+        def f(eta, max_error, hidden_vector, alpha = None):
+            nrows = self.data.df.shape[1] - 1
+            ws_init = pd.Series(self.list_weights(nrows, hidden_vector, target_length))  # initial randomized weights
+            ss_init = None if alpha is None else ws_init.map(lambda w: np.zeros(w.shape))  # initial gradients
             '''
             @param index: the index to iterate through
             @param start_w: the starting weight matrix to use for the epoch
             @return: new permuted index, weight matrix learned from data, and a series of predicted values
             '''
 
-            def epoch(index, start_w):
-                return self.online_update(vec_func, r, eta, index)(index, start_w, [])
+            def epoch(index, start_w, start_s, alpha):
+                return self.online_update(vec_func, r, eta, alpha, index)(index, start_w, start_s, [])
 
             '''
             @param index: index after an epoch or starting the first epoch
@@ -206,26 +213,48 @@ class Neural_Net:
             @return: the final prediction 
             '''
 
-            def evaluate(index, w, y=None):             
-                if y is None or self.calc_error(y, r, data) > max_error:  # if the predictions have not converged yet
+            def evaluate(index, w, s, y=None):
+                if y is None or self.calc_error(y, r, self.data) > max_error:  # if the predictions have not converged yet
                     try:
                         print("New Epoch")
-                        new_index, final_w, new_y = epoch(index, w)  # run through another epoch
-                        return evaluate(new_index, final_w, new_y)  # evaluate to see if there is convergence
+                        new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)  # run through another epoch
+                        return evaluate(new_index, final_w, final_s, new_y)  # evaluate to see if there is convergence
                     except RecursionError:
                         print("Too Much Recursion!")
                         return y  # return the last prediction before recursion error
                 else:
                     
-                    if data.classification:
+                    if self.data.classification:
                         results_df = pd.DataFrame(self.prediction(y, classes))
                     else:
                         results_df = pd.DataFrame(y)
+
                     results_df["Target"] = data.df["Target"]    
                     #print(results_df)
                     return results_df  # return final prediction
 
-            return evaluate(base_index, w_init)
+
+            def evaluate2(index, w, s, y = None, prev_y = None, prev_error = None):
+                if y is None:
+                    new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)  # run through first epoch
+                    return evaluate2(new_index, final_w, final_s, new_y)
+                else:
+                    if prev_error is None:
+                        error = self.calc_error(y, r, self.data)                         # calculate error
+                        new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)
+                        return evaluate2(new_index, final_w, final_s, new_y, y, error)
+                    else:
+                        error = self.calc_error(y, r, self.data)
+                        if error < prev_error:
+                            new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)
+                            return evaluate2(new_index, final_w, final_s, new_y, y, error)
+                        else:
+                            results_df = pd.DataFrame(prev_y)
+                            results_df["Target"] = self.data.df["Target"]
+                            print(results_df)
+                            return prev_y
+
+            return evaluate2(base_index, ws_init, ss_init)
 
         return f
 
