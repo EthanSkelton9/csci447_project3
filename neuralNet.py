@@ -150,10 +150,10 @@ class Neural_Net:
                 grads = []
                 wzs = zip(ws, zs)
                 previous_z = None
-                for wz in list(wzs)[::-1]:
-                    grads = [np.outer(error * self.dsigmoid_v(previous_z), wz[1])] + grads   # create gradient
-                    error = error @ wz[0]                                                   # back propagate error
-                    previous_z = wz[1]
+                for (w, z) in list(wzs)[::-1]:
+                    grads = [np.outer(error * self.dsigmoid_v(previous_z), z)] + grads   # create gradient
+                    error = error @ w                                               # back propagate error
+                    previous_z = z
                 if alpha is not None:
                     grads = pd.Series(zip(ss, grads)).map(lambda sg: alpha * sg[0] + (1-alpha) * sg[1]) #average grad
                 new_ws = pd.Series(zip(ws, grads)).map(lambda wg: wg[0] + eta * wg[1])           #calculate new weights
@@ -185,7 +185,7 @@ class Neural_Net:
         @return: function that uses the hyperparameters to return a series of predicted values
         '''
 
-        def f(eta, max_error, hidden_vector, alpha = None):
+        def f(eta, hidden_vector, alpha = None):
             nrows = self.data.df.shape[1] - 1
             ws_init = pd.Series(self.list_weights(nrows, hidden_vector, target_length))  # initial randomized weights
             ss_init = None if alpha is None else ws_init.map(lambda w: np.zeros(w.shape))  # initial gradients
@@ -204,7 +204,6 @@ class Neural_Net:
             @param y: current prediction
             @return: the final prediction 
             '''
-
             def evaluate(index, w, s, y = None, prev_y = None, prev_error = None):
                 if y is None:
                     new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)  # run through first epoch
