@@ -24,18 +24,6 @@ class Neural_Net:
 
         return f
 
-    '''
-    @param matrix: the matrix used to multiply
-    @return function that transforms vectors into vectors by multiplying by the given matrix
-    '''
-    def matrixmultiply(self, matrix):
-        '''
-        @param vector: the numpy vector that is multiplied
-        @return: numpy column vector that is the product of the matrix multiplication
-        '''
-        def f(vector):
-            return matrix @ vector.reshape(-1, 1)
-        return f
 
     '''
     @param x: a real number
@@ -88,6 +76,10 @@ class Neural_Net:
         def f_classification(i):
             cl = self.data.df.at[i, "Target"]                         # Gives the class at this index
             return np.array(class_index.map(lambda x: int(cl == x)))
+        '''
+        @param i: an integer index
+        @return: a real number that is the target
+        '''
         def f_regression(i):
             return self.data.df.at[i, "Target"]
         return (f_classification if classification else f_regression)
@@ -177,7 +169,6 @@ class Neural_Net:
     @return a function that takes hyperparameters eta and max error and returns a series of predicted target values
     '''
     def stochastic_online_gd(self, n = None):
-        #Hello World
         if n is None: n = self.data.df.shape[0]
         vec_func = self.vec(self.data)  # create vector function for data
         base_index = random.sample(list(self.data.df.index), k=n)  # create a shuffled index for iteration
@@ -214,48 +205,27 @@ class Neural_Net:
             @return: the final prediction 
             '''
 
-            def evaluate(index, w, s, y=None):
-                if y is None or self.calc_error(y, r, self.data) > max_error:  # if the predictions have not converged yet
-                    try:
-                        print("New Epoch")
-                        new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)  # run through another epoch
-                        return evaluate(new_index, final_w, final_s, new_y)  # evaluate to see if there is convergence
-                    except RecursionError:
-                        print("Too Much Recursion!")
-                        return y  # return the last prediction before recursion error
-                else:
-                    
-                    if self.data.classification:
-                        results_df = pd.DataFrame(self.prediction(y, classes))
-                    else:
-                        results_df = pd.DataFrame(y)
-
-                    results_df["Target"] = data.df["Target"]    
-                    #print(results_df)
-                    return results_df  # return final prediction
-
-
-            def evaluate2(index, w, s, y = None, prev_y = None, prev_error = None):
+            def evaluate(index, w, s, y = None, prev_y = None, prev_error = None):
                 if y is None:
                     new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)  # run through first epoch
-                    return evaluate2(new_index, final_w, final_s, new_y)
+                    return evaluate(new_index, final_w, final_s, new_y)
                 else:
                     if prev_error is None:
                         error = self.calc_error(y, r, self.data)                         # calculate error
                         new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)
-                        return evaluate2(new_index, final_w, final_s, new_y, y, error)
+                        return evaluate(new_index, final_w, final_s, new_y, y, error)
                     else:
                         error = self.calc_error(y, r, self.data)
                         if error < prev_error:
                             new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)
-                            return evaluate2(new_index, final_w, final_s, new_y, y, error)
+                            return evaluate(new_index, final_w, final_s, new_y, y, error)
                         else:
                             results_df = pd.DataFrame(prev_y)
                             results_df["Target"] = self.data.df["Target"]
                             print(results_df)
                             return prev_y
 
-            return evaluate2(base_index, ws_init, ss_init)
+            return evaluate(base_index, ws_init, ss_init)
 
         return f
 
@@ -317,45 +287,6 @@ class Neural_Net:
             return hidden_layers #return the hidden layers 
             
         return hidden_layers #return the hidden layers
-    
-    '''
-    multi_layer_prop() will create all the matricies that are required for the multi layer propogation to take place
-    '''
-    def multi_layer_prop(self, vector, classification):
-        
-         #start local variabls
-        data = self.data.df #set the data to the actual dataframe that we want access to
-        num_hidden =  len(vector) #number of hidden layers we want
-        nrows = len(data) #number of rows in df
-        col = data.columns #columns in df
-        
-        target = None #target classes that we are going for
-        target_len = 1 #target length set to 1 if regression
-        
-        new_data = data.copy() #copy of data
-        del new_data['Target'] # remove the target column
-        
-        weights = []
-        hidden = []
-        
-        if classification:
-            target = data["Target"].unique() #set target to each target value if classs
-            target_len = len(target) #set target length
-            
-        #end local variables
-        
-        
-        for i in range(nrows):
-            row = new_data.iloc[i].values
-            rlen = len(row)
-            w = self.list_weights(rlen, vector, target_len) #create the weights for each layer 
-            h = self.calc_Hidden(w, row, num_hidden) #create the hidden nodes
-            weights.append(w)
-            hidden.append(h) 
-        print(hidden[0])
-        
-        
-        return hidden
     
     def classification_error(self, predictions):
         error = 0
