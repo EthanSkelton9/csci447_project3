@@ -11,6 +11,11 @@ class CrossValidation:
         self.data = data
         self.nn = Neural_Net(data)
 
+    '''
+    @param k: the number of folds
+    @param: df: an optional subdataframe
+    @return: a list of lists that represents a partition of the data's index
+    '''
     def stratified_partition(self, k, df = None):
         if df is None: df = self.data.df
         p = [[] for i in range(k)]
@@ -36,7 +41,11 @@ class CrossValidation:
                 p[i] = p[i] + [sorted_df.at[i + c * k, 'index'] for c in range(q + int(i < r))]
         return p
 
-
+    '''
+    @param df: the dataframe
+    @param partition: the partition we are using
+    @return: a tuple a dictionary of the training sets and a dictionary of the test sets
+    '''
     def training_test_dicts(self, df, partition=None):
         if partition is None: partition = self.stratified_partition(10)
         train_dict = {}
@@ -47,7 +56,14 @@ class CrossValidation:
             test_dict[i] = df.filter(items=partition[i], axis=0)
         return (train_dict, test_dict)
 
-
+    '''
+    @param train_dict: dictionary of the training sets
+    @param eta_space: the range of learning rates
+    @param alpha_space: the range of momentum weights
+    @param appendCount: the number of rows to append to the dataframe
+    @param csv: the csv file we are appending to
+    @return: a data frame that has an error for each hyperparameter and fold combination
+    '''
     def getErrorDf(self, train_dict, eta_space, alpha_space, appendCount = None, csv = None):
         def error(i):
             (f, eta, alpha) = my_space[i]
