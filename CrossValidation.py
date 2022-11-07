@@ -98,7 +98,7 @@ class CrossValidation:
             print("Table Created")
         else:
             error_df = pd.read_csv(csv, index_col=0)
-            filtered = error_df["Error_0_Layers"].loc[pd.isnull(error_df["Error_0_Layers"])]
+            filtered = error_df["Error_0_Layers"].loc[pd.isnull(error_df["1_Layers"])]
             start = filtered.index[0]
         end = df_size if appendCount is None else min(start + appendCount, df_size)
         tuples = pd.Series(range(start, end)).map(error).values
