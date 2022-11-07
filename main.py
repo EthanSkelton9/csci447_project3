@@ -13,15 +13,20 @@ def main_Ian():
         DD = DataDictionary()
         data = DD.dataobject(True, "SoyBean")
         NN = Neural_Net(data)
-        # y = NN.stochastic_online_gd()(eta=0.1, max_error=1, hidden_vector = [8, 4], alpha = 0.9)
-        y = NN.tuning([1])
+        y = NN.stochastic_online_gd()(eta=0.1, hidden_vector = [8, 4], alpha = 0.9)
         print(y)
     def f2():
         DD = DataDictionary()
         data = DD.dataobject(True, "Abalone")
         DataCV = CV(data)
         DataCV.test(eta_space = np.linspace(0.1, 0.3, 3), alpha_space = [0, 0.8, 0.9], new=False, appendCount=3)
-    return f2()
+    def f3():
+        DD = DataDictionary()
+        data = DD.dataobject(True, "SoyBean")
+        DataCV = CV(data)
+        DataCV.analysis()
+
+    return f1()
 
 
 

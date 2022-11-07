@@ -136,3 +136,10 @@ class CrossValidation:
         csv = None if new else os.getcwd() + '\\' + str(self.data) + '\\' + "{}_Error.csv".format(str(self.data))
         error_df = self.getErrorDf(train_dict, eta_space, alpha_space, appendCount, csv)
 
+    def analysis(self):
+        p = self.stratified_partition(10)
+        (train_dict, test_dict) = self.training_test_dicts(self.data.df, p)
+        csv = os.getcwd() + '\\' + str(self.data) + '\\' + "{}_Error.csv".format(str(self.data))
+        error_df = pd.read_csv(csv, index_col=0)
+        self.getAnalysisDf(train_dict, test_dict, error_df)
+
