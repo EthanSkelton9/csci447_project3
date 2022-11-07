@@ -314,44 +314,44 @@ class Neural_Net:
             error += abs(pred - target)
         return error/length
     
-    def tuning(self, vector, next_layer):
+    def tuning(self, vector):
         prev_error = 0
         error = 0
         i = 0
         
-        if next_layer:
-            num_hidden = len(vector) + 1
-            vector = vector + [0]
-            while prev_error == 0 or error <= prev_error:
-                if error != 0:
-                    prev_error = error
-                vector[num_hidden - 1] = i + 1
-                print(vector)
-                predictions = self.stochastic_online_gd(20)(eta=0.1, hidden_vector = vector)
-                # print(predictions)
-                if self.data.classification:
-                    error = self.classification_error(predictions)
-                else:
-                    error = self. regression_error(predictions)
-                print(error)
-                i += 1
-            return i - 1
-        else:
-            num_hidden = len(vector)
-            start_value = vector[num_hidden-1]
-            lowest_error_layer = 0
-            while prev_error == 0 or i < 10:
-                if error != 0 and prev_error >= error:
-                    prev_error = error
-                    lowest_error_layer = start_value+i-1
-                print(vector)
-                predictions = self.stochastic_online_gd(20)(eta=0.1, hidden_vector = vector)
-                # print(predictions)
-                if self.data.classification:
-                    error = self.classification_error(predictions)
-                else:
-                    error = self. regression_error(predictions)
-                print(error)
-                i += 1
-                vector[num_hidden - 1] = start_value + i
-            return lowest_error_layer
+        # if next_layer:
+        num_hidden = len(vector) + 1
+        vector = vector + [0]
+        while prev_error == 0 or error <= prev_error:
+            if error != 0:
+                prev_error = error
+            vector[num_hidden - 1] = i + 1
+            print(vector)
+            predictions = self.stochastic_online_gd(self.data.df, 20)(eta=0.1, hidden_vector = vector)
+            # print(predictions)
+            if self.data.classification:
+                error = self.classification_error(predictions)
+            else:
+                error = self. regression_error(predictions)
+            print(error)
+            i += 1
+        return i - 1
+        # else:
+        #     num_hidden = len(vector)
+        #     start_value = vector[num_hidden-1]
+        #     lowest_error_layer = 0
+        #     while prev_error == 0 or i < 10:
+        #         if error != 0 and prev_error >= error:
+        #             prev_error = error
+        #             lowest_error_layer = start_value+i-1
+        #         print(vector)
+        #         predictions = self.stochastic_online_gd(20)(eta=0.1, hidden_vector = vector)
+        #         # print(predictions)
+        #         if self.data.classification:
+        #             error = self.classification_error(predictions)
+        #         else:
+        #             error = self. regression_error(predictions)
+        #         print(error)
+        #         i += 1
+        #         vector[num_hidden - 1] = start_value + i
+        #     return lowest_error_layer
