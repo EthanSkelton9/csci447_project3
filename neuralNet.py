@@ -142,7 +142,7 @@ class Neural_Net:
                 x = vec_func(i)  # the next sample vector
                 zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)                   # the input and hidden layers
                 if self.data.classification:
-                    yi = np.exp(ws.iloc[-1] @ zs[-1]).reshape(1, -1)                 # gives the exponent at each component
+                    yi = np.vectorize(np.exp)(ws.iloc[-1] @ zs[-1]).reshape(1, -1)                 # gives the exponent at each component
                     yi = yi / np.sum(yi)                                          # normalizes the vector
                 else:
                     yi = (ws.iloc[-1] @ zs[-1])[0]                                # return a real value
@@ -220,9 +220,6 @@ class Neural_Net:
                             new_index, final_w, final_s, new_y = epoch(index, w, s, alpha)
                             return evaluate(new_index, final_w, final_s, new_y, y, error)
                         else:
-                            results_df = pd.DataFrame(prev_y)
-                            results_df["Target"] = self.data.df["Target"]
-                            print(results_df)
                             return prev_y
 
             return evaluate(base_index, ws_init, ss_init)
@@ -278,7 +275,7 @@ class Neural_Net:
         layers.append(row)
         
         if(num_hidden == 0): #if there are no hidden layers
-            return None
+            return hidden_layers
         else:
             hidden_layers.append(self.sigmoid_v(weights[0]@row)) #find the first hidden layer
             for i in range(num_hidden-1):
@@ -314,28 +311,28 @@ class Neural_Net:
             error += abs(pred - target)
         return error/length
     
-    def tuning(self, vector):
-        prev_error = 0
-        error = 0
-        i = 0
-        
-        # if next_layer:
-        num_hidden = len(vector) + 1
-        vector = vector + [0]
-        while prev_error == 0 or error <= prev_error:
-            if error != 0:
-                prev_error = error
-            vector[num_hidden - 1] = i + 1
-            print(vector)
-            predictions = self.stochastic_online_gd(self.data.df, 20)(eta=0.1, hidden_vector = vector)
-            # print(predictions)
-            if self.data.classification:
-                error = self.classification_error(predictions)
-            else:
-                error = self. regression_error(predictions)
-            print(error)
-            i += 1
-        return i - 1
+    def tuning(self, df):
+        def f(vector, eta, alpha):
+            prev_error = 0
+            error = 0
+            i = 0
+
+            # if next_layer:
+            num_hidden = len(vector) + 1
+            vector = vector + [0]
+            while prev_error == 0 or error <= prev_error:
+                if error != 0:
+                    prev_error = error
+                vector[num_hidden - 1] = i + 1
+                predictions = self.stochastic_online_gd(df)(eta, hidden_vector = vector, alpha = alpha)
+                # print(predictions)
+                if self.data.classification:
+                    error = self.classification_error(predictions)
+                else:
+                    error = self. regression_error(predictions)
+                i += 1
+            return i - 1
+        return f
         # else:
         #     num_hidden = len(vector)
         #     start_value = vector[num_hidden-1]
