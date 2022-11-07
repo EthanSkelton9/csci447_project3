@@ -17,6 +17,9 @@ class Video():
         rNN = Neural_Net(rdata)
         pass
     
+    
+    
+    
     def model(self):
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         DD = DataDictionary()
@@ -181,6 +184,9 @@ class Video():
         print(weights2[2]@hidden_layers[1])
         
     
+    
+    
+    
       
     def propagation(self):
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
@@ -228,6 +234,10 @@ class Video():
         print("Multiply the final weight matrix by the last hidden layer to get the output")
         print(weights[2]@hidden_layers[1])
     
+    
+    
+    
+    
     def grad_calc():
         DD = DataDictionary()
         rdata = DD.dataobject(True, "ForestFires")
@@ -243,6 +253,10 @@ class Video():
         cNN = Neural_Net(cdata)
         rNN = Neural_Net(rdata)
         pass
+    
+    
+    
+    
     
     def average_performance(self):
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
