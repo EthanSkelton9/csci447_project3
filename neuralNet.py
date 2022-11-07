@@ -304,7 +304,6 @@ class Neural_Net:
         length = len(predictions)
         predictions = pd.DataFrame(predictions)
         predictions["Target"] = self.data.df["Target"]
-        print(predictions)
         for i in predictions.index:
             pred = predictions.loc[i][0]
             target = predictions.loc[i]["Target"]

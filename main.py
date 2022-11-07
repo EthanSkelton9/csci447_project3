@@ -18,9 +18,9 @@ def main_Ian():
         print(y)
     def f2():
         DD = DataDictionary()
-        data = DD.dataobject(True, "BreastCancer")
+        data = DD.dataobject(True, "Abalone")
         DataCV = CV(data)
-        DataCV.test(eta_space = np.linspace(0.1, 0.3, 3), alpha_space = [0, 0.8, 0.9], new=False, appendCount=15)
+        DataCV.test(eta_space = np.linspace(0.1, 0.3, 3), alpha_space = [0, 0.8, 0.9], new=False, appendCount=3)
     return f2()
 
 
