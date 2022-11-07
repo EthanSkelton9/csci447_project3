@@ -110,24 +110,39 @@ class CrossValidation:
         error_df.to_csv(os.getcwd() + '\\' + str(self.data) + '\\' + "{}_Error_From_{}_To_{}.csv".format(str(self.data), start, end))
         print("Time Elapsed: {} Seconds".format(time.time() - start_time))
         return error_df
+    
+    def string_to_list(self, string):
+        li = list(string.split(","))
+        li[0] = li[0].replace('[','')
+        li[-1] = li[0].replace(']','')
+        for i in range(len(li)):
+            li[i] = int(li[i])
+        return li
 
     def getAnalysisDf(self, train_dict, test_dict, error_df):
         learning_set = copy(self.data.df)
-        pc_0, pc_1, pc_2 = 3 * (pd.Series(index=learning_set.index),)
+        pc_0 = pc_1 = pc_2 = pd.Series(index=learning_set.index)
         target = self.nn.targetvec(self.data.classification, self.data.classes)
-        df_0, df_1, df_2 = 3 * (pd.DataFrame(columns=["eta", "alpha", "vector", "Error"], index=range(10)),)
+        df_0 = df_1 = df_2 = pd.DataFrame(columns=["eta", "alpha", "vector", "Error"], index=range(10))
         for (i, df, pc) in zip(range(3), [df_0, df_1, df_2], [pc_0, pc_1, pc_2]):
             for f in range(10):
                 fold_df = error_df.loc[lambda df: df['Fold'] == f]
                 best_row = fold_df.loc[lambda df: df['Error_{}_Layers'.format(i)] == fold_df["Error_{}_Layers".format(i)].min()].iloc[0]
                 (best_eta, best_alpha) = (int(best_row["eta"]), int(best_row["alpha"]))
-                best_vector = [] if i == 0 else int(best_row["{}_Layers".format(i)])
+                best_vector = [] if i == 0 else self.string_to_list(best_row["{}_Layers".format(i)])
                 y = self.nn.stochastic_online_gd(test_dict[f])(best_eta, best_vector, best_alpha)
                 pc.loc[test_dict[f].index] = self.nn.prediction(y, self.data.classes).values if self.data.classification else y.values
                 df.loc[[f], ["eta", "alpha", "vector", "Error"]] = [best_eta, best_alpha,  best_vector, self.nn.calc_error(y, target, self.data)]
             df.to_csv(os.getcwd() + '\\' + str(self.data) + '\\' + "{}_Analysis_{}.csv".format(str(self.data), i))
             learning_set["Pred_{}".format(i)] = pc
         learning_set.to_csv(os.getcwd() + '\\' + str(self.data) + '\\' + "{}_Pred.csv".format(str(self.data)))
+        
+    def analysisFunction(self):
+        p = self.stratified_partition(10)
+        (train_dict, test_dict) = self.training_test_dicts(self.data.df, p)
+        csv = os.getcwd() + '\\' + str(self.data) + '\\' + "{}_Error.csv".format(str(self.data))
+        error_df = pd.read_csv(csv, index_col=0)
+        self.getAnalysisDf(train_dict, test_dict, error_df)
 
 
     def test(self, eta_space, alpha_space,  new = False, appendCount = None):
