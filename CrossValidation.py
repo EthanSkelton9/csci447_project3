@@ -128,7 +128,7 @@ class CrossValidation:
             for f in range(10):
                 fold_df = error_df.loc[lambda df: df['Fold'] == f]
                 best_row = fold_df.loc[lambda df: df['Error_{}_Layers'.format(i)] == fold_df["Error_{}_Layers".format(i)].min()].iloc[0]
-                (best_eta, best_alpha) = (int(best_row["eta"]), int(best_row["alpha"]))
+                (best_eta, best_alpha) = (float(best_row["eta"]), float(best_row["alpha"]))
                 best_vector = [] if i == 0 else self.string_to_list(best_row["{}_Layers".format(i)])
                 y = self.nn.stochastic_online_gd(test_dict[f])(best_eta, best_vector, best_alpha)
                 pc.loc[test_dict[f].index] = self.nn.prediction(y, self.data.classes).values if self.data.classification else y.values
