@@ -23,7 +23,7 @@ def main_Ian():
         DataCV.analysisFunction()
     def f3():
         DD = DataDictionary()
-        data = DD.dataobject(True, "ForestFires")
+        data = DD.dataobject(True, "Abalone")
         DataCV = CV(data)
         DataCV.latex_display()
     return f3()
@@ -31,11 +31,7 @@ def main_Ian():
 
 
 def main():
-    
-    DD = DataDictionary()
-    data = DD.dataobject(True, "SoyBean")
-    SoyBeans = Neural_Net(data)
-    SoyBeans.multi_layer_prop([1,3,4], classification = True)
+    pass
     
     
 if __name__=="__main__":
