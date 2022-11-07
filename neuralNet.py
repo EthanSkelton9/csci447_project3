@@ -154,7 +154,7 @@ class Neural_Net:
                     grads = [np.outer(error * self.dsigmoid_v(previous_z), z)] + grads   # create gradient
                     error = error @ w                                               # back propagate error
                     previous_z = z
-                if alpha is not None:
+                if alpha != 0:
                     grads = pd.Series(zip(ss, grads)).map(lambda sg: alpha * sg[0] + (1-alpha) * sg[1]) #average grad
                 new_ws = pd.Series(zip(ws, grads)).map(lambda wg: wg[0] + eta * wg[1])           #calculate new weights
                 new_ss = None if ss is None else grads                                        #calculate new gradients
@@ -168,10 +168,11 @@ class Neural_Net:
     @param n: the size of the subset of the data we are using
     @return a function that takes hyperparameters eta and max error and returns a series of predicted target values
     '''
-    def stochastic_online_gd(self, n = None):
-        if n is None: n = self.data.df.shape[0]
+    def stochastic_online_gd(self, df = None, n = None):
+        df = self.data.df if df is None else df
+        if n is None: n = df.shape[0]
         vec_func = self.vec(self.data)  # create vector function for data
-        base_index = random.sample(list(self.data.df.index), k=n)  # create a shuffled index for iteration
+        base_index = random.sample(list(df.index), k=n)  # create a shuffled index for iteration
         if self.data.classification:
             classes = self.data.df["Target"].unique()        # create unique class list
             r = self.targetvec(True, pd.Index(classes))      # create function that returns vector of a class
@@ -185,7 +186,7 @@ class Neural_Net:
         @return: function that uses the hyperparameters to return a series of predicted values
         '''
 
-        def f(eta, hidden_vector, alpha = None):
+        def f(eta, hidden_vector, alpha = 0):
             nrows = self.data.df.shape[1] - 1
             ws_init = pd.Series(self.list_weights(nrows, hidden_vector, target_length))  # initial randomized weights
             ss_init = None if alpha is None else ws_init.map(lambda w: np.zeros(w.shape))  # initial gradients
@@ -221,7 +222,7 @@ class Neural_Net:
                         else:
                             results_df = pd.DataFrame(prev_y)
                             results_df["Target"] = self.data.df["Target"]
-                            # print(results_df)
+                            print(results_df)
                             return prev_y
 
             return evaluate(base_index, ws_init, ss_init)

@@ -23,7 +23,7 @@ class DataDictionary:
             data.clean_missing()
             data.one_hot()           #implement one hot encoding
             data.z_score_normalize() #normalize data with z score
-            data.classes = list(set(data.df['Target'])) if data.classification else None
+            data.classes = pd.Index(list(set(data.df['Target']))) if data.classification else None
         return data
 
     def metadata(self, name):
