@@ -18,6 +18,7 @@ class Video():
         pass
     
     def model(self):
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         DD = DataDictionary()
         rdata = DD.dataobject(True, "ForestFires")
         cdata = DD.dataobject(True, "SoyBean")
@@ -182,6 +183,7 @@ class Video():
     
       
     def propagation(self):
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print("---------------Propagating through the Soybeans dataset---------------------")
         DD = DataDictionary()
         data = DD.dataobject(True, "SoyBean")
@@ -242,10 +244,41 @@ class Video():
         rNN = Neural_Net(rdata)
         pass
     
-    def average_performance():
+    def average_performance(self):
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         DD = DataDictionary()
         rdata = DD.dataobject(True, "ForestFires")
         cdata = DD.dataobject(True, "SoyBean")
         cNN = Neural_Net(cdata)
         rNN = Neural_Net(rdata)
-        pass
+        
+        #regression ---------------------------------
+        print("==============================Regression 10-fold==============================")
+        csv = os.getcwd() + '\\' + str(rNN.data) + '\\' + "{}_Analysis_0.csv".format(str(rNN.data))
+        analysis0 = pd.read_csv(csv, index_col=0)
+        csv = os.getcwd() + '\\' + str(rNN.data) + '\\' + "{}_Analysis_1.csv".format(str(rNN.data))
+        analysis1 = pd.read_csv(csv, index_col=0)
+        csv = os.getcwd() + '\\' + str(rNN.data) + '\\' + "{}_Analysis_2.csv".format(str(rNN.data))
+        analysis2 = pd.read_csv(csv, index_col=0)
+        print("+++++++++++++++++++++++Analysis for 0 Hidden Layers+++++++++++++++++++++++")
+        print(analysis0)
+        print("+++++++++++++++++++++++Analysis for 1 Hidden Layer+++++++++++++++++++++++")
+        print(analysis1)
+        print("+++++++++++++++++++++++Analysis for 2 Hidden Layers+++++++++++++++++++++++")
+        print(analysis2)
+        
+        #classification -----------------------------
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("==============================Classification 10-fold==============================")
+        csv = os.getcwd() + '\\' + str(cNN.data) + '\\' + "{}_Analysis_0.csv".format(str(cNN.data))
+        analysis0 = pd.read_csv(csv, index_col=0)
+        csv = os.getcwd() + '\\' + str(cNN.data) + '\\' + "{}_Analysis_1.csv".format(str(cNN.data))
+        analysis1 = pd.read_csv(csv, index_col=0)
+        csv = os.getcwd() + '\\' + str(cNN.data) + '\\' + "{}_Analysis_2.csv".format(str(cNN.data))
+        analysis2 = pd.read_csv(csv, index_col=0)
+        print("+++++++++++++++++++++++Analysis for 0 Hidden Layers+++++++++++++++++++++++")
+        print(analysis0)
+        print("+++++++++++++++++++++++Analysis for 1 Hidden Layer+++++++++++++++++++++++")
+        print(analysis1)
+        print("+++++++++++++++++++++++Analysis for 2 Hidden Layers+++++++++++++++++++++++")
+        print(analysis2)

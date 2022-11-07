@@ -41,11 +41,11 @@ def main():
 def main_video():
     V = Video()
     # V.performance()
-    # V.model()
-    # V.propagation()
+    V.model()
+    V.propagation()
     # V.grad_calc()
     # V.weight_update()
-    # V.average_performance()
+    V.average_performance()
     
     
 if __name__=="__main__":
