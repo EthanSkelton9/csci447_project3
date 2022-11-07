@@ -14,7 +14,8 @@ def main_Ian():
         data = DD.dataobject(True, "SoyBean")
         NN = Neural_Net(data)
         # y = NN.stochastic_online_gd()(eta=0.1, max_error=1, hidden_vector = [8, 4], alpha = 0.9)
-        y = NN.tuning([1], True)
+        y = NN.tuning([1])
+        print(y)
     def f2():
         DD = DataDictionary()
         data = DD.dataobject(True, "SoyBean")
