@@ -158,3 +158,11 @@ class CrossValidation:
         error_df = pd.read_csv(csv, index_col=0)
         self.getAnalysisDf(train_dict, test_dict, error_df)
 
+
+    def latex_display(self):
+        for i in range(3):
+            csv = os.getcwd() + '\\' + str(self.data) + '\\' + "{}_Analysis_{}.csv".format(str(self.data), i)
+            analysis_df = pd.read_csv(csv, index_col=0).head(5)
+            print("Number of Hidden Layers is {}.".format(i))
+            print(analysis_df.to_latex())
+
