@@ -48,17 +48,16 @@ class CrossValidation:
         return (train_dict, test_dict)
 
 
-    def getErrorDf_NN(self, train_dict, eta_space, alpha_space, appendCount = None, csv = None):
+    def getErrorDf(self, train_dict, eta_space, alpha_space, appendCount = None, csv = None):
         def error(i):
             (f, eta, alpha) = my_space[i]
-            print("Fold is {}. eta is {}. alpha is {}.".format(f, eta, alpha))
-            NN = Neural_Net(train_dict[f])
-            pred = NN.stochastic_online_gd()(eta, [8, 4], alpha)
-            return NN.calc_error
+            pred = NNs[f](eta, [8, 4], alpha)
+            return self.nn.calc_error(pred, target, self.data)
 
         start_time = time.time()
         target = self.nn.targetvec(self.data.classification, self.data.classes)
         folds = pd.Index(range(10))
+        NNs = folds.map(lambda f: self.nn.stochastic_online_gd(train_dict[f]))
         my_space = pd.Series(prod(folds, eta_space, alpha_space))
         df_size = len(my_space)
         if csv is None:
@@ -78,7 +77,13 @@ class CrossValidation:
         end = df_size if appendCount is None else min(start + appendCount, df_size)
         error_df["Error"][start:end] = pd.Series(range(start, end)).map(error).values
         error_df.to_csv(os.getcwd() + '\\' + str(self.data) + '\\' + "{}_Error.csv".format(str(self.data)))
-        error_df.to_csv(os.getcwd() + '\\' + str(self) + '\\' + "{}_Error_From_{}_To_{}.csv".format(str(self.data), start, end))
+        error_df.to_csv(os.getcwd() + '\\' + str(self.data) + '\\' + "{}_Error_From_{}_To_{}.csv".format(str(self.data), start, end))
         print("Time Elapsed: {} Seconds".format(time.time() - start_time))
         return error_df
+
+    def test(self, eta_space, alpha_space,  new = False, appendCount = None):
+        p = self.stratified_partition(10)
+        (train_dict, test_dict) = self.training_test_dicts(self.data.df, p)
+        csv = None if new else os.getcwd() + '\\' + str(self) + '\\' + "{}_Error.csv".format(str(self.data))
+        error_df = self.getErrorDf(train_dict, eta_space, alpha_space, appendCount, csv)
 
