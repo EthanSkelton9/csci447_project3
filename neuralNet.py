@@ -221,7 +221,7 @@ class Neural_Net:
                         else:
                             results_df = pd.DataFrame(prev_y)
                             results_df["Target"] = self.data.df["Target"]
-                            print(results_df)
+                            # print(results_df)
                             return prev_y
 
             return evaluate(base_index, ws_init, ss_init)
@@ -290,6 +290,8 @@ class Neural_Net:
     def classification_error(self, predictions):
         error = 0
         length = len(predictions)
+        predictions = pd.DataFrame(self.prediction(predictions, self.data.classes))
+        predictions["Target"] = self.data.df["Target"]
         for i in predictions.index:
             pred = predictions.loc[i][0]
             target = predictions.loc[i]["Target"]
@@ -297,25 +299,58 @@ class Neural_Net:
                 error += 1
             else:
                 error = error
+        return 1-error/length
+    
+    def regression_error(self, predictions):
+        error = 0
+        length = len(predictions)
+        predictions = pd.DataFrame(predictions)
+        predictions["Target"] = self.data.df["Target"]
+        print(predictions)
+        for i in predictions.index:
+            pred = predictions.loc[i][0]
+            target = predictions.loc[i]["Target"]
+            error += abs(pred - target)
         return error/length
     
-    def tuning(self, vector):
-        num_hidden = len(vector) + 1
-        vector = vector + [0]
+    def tuning(self, vector, next_layer):
+        prev_error = 0
+        error = 0
+        i = 0
         
-        if self.data.classification:
-            prev_error = -1
-            error = 0
-            i = 0
-            while prev_error <= error:
+        if next_layer:
+            num_hidden = len(vector) + 1
+            vector = vector + [0]
+            while prev_error == 0 or error <= prev_error:
                 if error != 0:
                     prev_error = error
                 vector[num_hidden - 1] = i + 1
                 print(vector)
-                predictions = self.stochastic_online_gd(self.data, 20)(eta=0.1, max_error=15, hidden_vector = vector)
-                print(predictions)
-                error = self.classification_error(predictions)
+                predictions = self.stochastic_online_gd(20)(eta=0.1, hidden_vector = vector)
+                # print(predictions)
+                if self.data.classification:
+                    error = self.classification_error(predictions)
+                else:
+                    error = self. regression_error(predictions)
                 print(error)
                 i += 1
+            return i - 1
         else:
-            pass
+            num_hidden = len(vector)
+            start_value = vector[num_hidden-1]
+            lowest_error_layer = 0
+            while prev_error == 0 or i < 10:
+                if error != 0 and prev_error >= error:
+                    prev_error = error
+                    lowest_error_layer = start_value+i-1
+                print(vector)
+                predictions = self.stochastic_online_gd(20)(eta=0.1, hidden_vector = vector)
+                # print(predictions)
+                if self.data.classification:
+                    error = self.classification_error(predictions)
+                else:
+                    error = self. regression_error(predictions)
+                print(error)
+                i += 1
+                vector[num_hidden - 1] = start_value + i
+            return lowest_error_layer
