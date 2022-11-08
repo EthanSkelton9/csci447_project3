@@ -86,7 +86,7 @@ class Video():
         print(weights1[1]@hidden_layers[0])
         
         weights2 = rNN.list_weights(nfeatures, [3,4], 1)
-        print("---------------------------One Hidden Layers, Regression---------------------------")
+        print("---------------------------Two Hidden Layers, Regression---------------------------")
         print("All of the feature values in the node")
         print(row)
         print("======Weights for model with one hidden layers (features - 1st hidden)======")
@@ -168,7 +168,7 @@ class Video():
         
         
         weights2 = cNN.list_weights(nfeatures, [3,2], target_length)
-        print("---------------------------One Hidden Layers, Classification---------------------------")
+        print("---------------------------Two Hidden Layers, Classification---------------------------")
         print("All of the feature values in the node")
         print(row)
         print("======Weights for model with one hidden layers (features - 1st hidden)======")
