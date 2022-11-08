@@ -14,7 +14,8 @@ class Neural_Net:
     @param data: the data set we are using
     @return: function that takes a row of the data and returns its numpy vector
     '''
-    def vec(self, data):
+    def vec(self, data = None):
+        data = self.data if data == None else data
         '''
         @param i: index of the data set
         @return: numpy row vector of the data with a 1 appended at the beginning for the bias weight
@@ -95,7 +96,7 @@ class Neural_Net:
     def cross_entropy(self, predicted, targetvec):
         error = 0
         for i in predicted.index:
-            error =+ -(targetvec(i) @ np.log(predicted[i][0]))
+            error =+ -(targetvec(i) @ np.vectorize(np.log)(predicted[i][0]))
         return error
     
     def calc_error(self,y,r,data):
@@ -159,6 +160,43 @@ class Neural_Net:
                 new_ws = pd.Series(zip(ws, grads)).map(lambda wg: wg[0] + eta * wg[1])           #calculate new weights
                 new_ss = None if ss is None else grads                                        #calculate new gradients
                 return f.tail_call(index_remaining[1:], new_ws, new_ss, y_acc + [(i, yi)])
+        return f
+
+    def online_update_single(self, vec_func, r, eta, alpha, index):
+        '''
+        @param index_remaining: index left to iterate through
+        @param w: the current weight matrix
+        @param y_acc: the current set of accumulated predictions
+        @return: new index, final weight matrix, and complete set of predictions after iterated through index
+        '''
+
+        @tail_recursive
+        def f(index_remaining, ws, ss, y_acc):
+            if len(index_remaining) == 0:  # if there is nothing more to iterate through
+                y_idx, y_values = zip(*y_acc)  # unzip to get y index and y values
+                return (self.permute(index), ws, ss, pd.Series(y_values, y_idx))
+            else:
+                i = index_remaining[0]  # the next index value
+                x = vec_func(i)  # the next sample vector
+                zs = [x] + self.calc_Hidden(ws, x, len(ws) - 1)                   # the input and hidden layers
+                if self.data.classification:
+                    yi = np.vectorize(np.exp)(ws.iloc[-1] @ zs[-1]).reshape(1, -1)                 # gives the exponent at each component
+                    yi = yi / np.sum(yi)                                          # normalizes the vector
+                else:
+                    yi = (ws.iloc[-1] @ zs[-1])[0]                                # return a real value
+                error = np.array([r(i) - yi])                                     # return errors at each of the outputs
+                grads = []
+                wzs = zip(ws, zs)
+                previous_z = None
+                for (w, z) in list(wzs)[::-1]:
+                    grads = [np.outer(error * self.dsigmoid_v(previous_z), z)] + grads   # create gradient
+                    error = error @ w                                               # back propagate error
+                    previous_z = z
+                if alpha != 0:
+                    grads = pd.Series(zip(ss, grads)).map(lambda sg: alpha * sg[0] + (1-alpha) * sg[1]) #average grad
+                new_ws = pd.Series(zip(ws, grads)).map(lambda wg: wg[0] + eta * wg[1])           #calculate new weights
+                new_ss = None if ss is None else grads                                        #calculate new gradients
+                return (yi, i, grads, new_ws)
         return f
 
 
@@ -332,22 +370,4 @@ class Neural_Net:
                 i += 1
             return i - 1
         return f
-        # else:
-        #     num_hidden = len(vector)
-        #     start_value = vector[num_hidden-1]
-        #     lowest_error_layer = 0
-        #     while prev_error == 0 or i < 10:
-        #         if error != 0 and prev_error >= error:
-        #             prev_error = error
-        #             lowest_error_layer = start_value+i-1
-        #         print(vector)
-        #         predictions = self.stochastic_online_gd(20)(eta=0.1, hidden_vector = vector)
-        #         # print(predictions)
-        #         if self.data.classification:
-        #             error = self.classification_error(predictions)
-        #         else:
-        #             error = self. regression_error(predictions)
-        #         print(error)
-        #         i += 1
-        #         vector[num_hidden - 1] = start_value + i
-        #     return lowest_error_layer
+
